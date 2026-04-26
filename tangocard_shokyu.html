@@ -1,0 +1,1522 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>単語カード 初中級 9〜34課</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;700;900&family=Zen+Kaku+Gothic+New:wght@400;700;900&display=swap');
+
+  :root {
+    --bg: #0f1923;
+    --card-bg: #1a2633;
+    --accent: #f5a623;
+    --accent2: #4ecdc4;
+    --text: #f0f4f8;
+    --muted: #7a9ab5;
+    --border: #2a3f55;
+    --test-accent: #e94560;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Noto Sans JP', sans-serif;
+    min-height: 100vh;
+    display: flex; flex-direction: column; align-items: center;
+    padding: 20px;
+    background-image: 
+      radial-gradient(ellipse at 20% 50%, rgba(78,205,196,0.05) 0%, transparent 60%),
+      radial-gradient(ellipse at 80% 20%, rgba(245,166,35,0.05) 0%, transparent 60%);
+    transition: background-color 0.4s;
+  }
+  body.test-mode {
+    background-color: #1a1a2e;
+    background-image:
+      radial-gradient(ellipse at 30% 60%, rgba(233,69,96,0.07) 0%, transparent 60%);
+  }
+
+  .mode-switcher {
+    width: 100%; max-width: 700px;
+    display: flex; gap: 8px; margin-bottom: 20px;
+    background: rgba(255,255,255,0.04);
+    border: 1.5px solid rgba(255,255,255,0.25); border-radius: 12px; padding: 6px;
+  }
+  .mode-btn {
+    flex: 1; border: none; border-radius: 8px; padding: 10px;
+    font-family: 'Noto Sans JP', sans-serif; font-weight: 700; font-size: 0.85rem;
+    cursor: pointer; transition: all 0.25s; color: var(--muted); background: transparent;
+  }
+  .mode-btn.active-study { background: linear-gradient(135deg, var(--accent2), #38b2ac); color: #0f1923; }
+  .mode-btn.active-test  { background: linear-gradient(135deg, var(--test-accent), #c23152); color: #fff; }
+  .mode-btn.active-print { background: linear-gradient(135deg, #a78bfa, #7c3aed); color: #fff; }
+  .mode-btn.active-word  { background: linear-gradient(135deg, #f59e0b, #d97706); color: #0f1923; }
+
+  header {
+    width: 100%; max-width: 700px;
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 16px 0 20px; border-bottom: 1px solid var(--border); margin-bottom: 24px;
+  }
+  header h1 {
+    font-family: 'Zen Kaku Gothic New', sans-serif; font-weight: 900; font-size: 1.4rem;
+    color: var(--accent); transition: color 0.3s;
+  }
+  body.test-mode header h1 { color: var(--test-accent); }
+  .counter { font-size: 0.85rem; color: var(--muted); }
+
+  .progress-bar {
+    width: 100%; max-width: 700px; height: 4px;
+    background: var(--border); border-radius: 2px; overflow: hidden; margin-bottom: 20px;
+  }
+  .progress-fill {
+    height: 100%; background: linear-gradient(90deg, var(--accent2), var(--accent));
+    transition: width 0.4s ease, background 0.3s;
+  }
+  body.test-mode .progress-fill { background: linear-gradient(90deg, var(--test-accent), #f5a623); }
+
+  /* SCORE BAR */
+  .score-bar {
+    display: none; width: 100%; max-width: 700px;
+    background: rgba(255,255,255,0.04); border: 1px solid rgba(233,69,96,0.2);
+    border-radius: 12px; padding: 12px 20px; margin-bottom: 16px;
+    justify-content: space-around; align-items: center;
+  }
+  body.test-mode .score-bar { display: flex; }
+  .score-item { text-align: center; }
+  .score-num { font-size: 1.6rem; font-weight: 900; font-family: 'Zen Kaku Gothic New', sans-serif; }
+  .score-label { font-size: 0.7rem; color: var(--muted); }
+  .score-correct .score-num { color: var(--accent2); }
+  .score-wrong .score-num { color: var(--test-accent); }
+  .score-remain .score-num { color: var(--accent); }
+
+  /* CARD */
+  .card-area { width: 100%; max-width: 700px; margin-bottom: 24px; }
+  .card {
+    width: 100%; min-height: 420px; background: var(--card-bg);
+    border: 1.5px solid rgba(255,255,255,0.25); border-radius: 20px;
+    display: flex; flex-direction: column; align-items: center; justify-content: space-between;
+    padding: 32px 32px 28px; position: relative; overflow: hidden;
+    animation: cardIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+    transition: border-color 0.3s;
+  }
+  body.test-mode .card { border-color: rgba(233,69,96,0.25); }
+  .card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    background: linear-gradient(90deg, var(--accent2), var(--accent)); transition: background 0.3s;
+  }
+  body.test-mode .card::before { background: linear-gradient(90deg, var(--test-accent), #f5a623); }
+
+  @keyframes cardIn {
+    from { opacity: 0; transform: translateY(20px) scale(0.96); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+  }
+
+  .card-num { position: absolute; top: 20px; right: 24px; font-size: 0.75rem; color: var(--muted); }
+  .test-badge {
+    display: none; position: absolute; top: 16px; left: 20px;
+    background: var(--test-accent); color: white;
+    font-size: 0.65rem; font-weight: 700; padding: 3px 10px; border-radius: 20px;
+  }
+  body.test-mode .test-badge { display: block; }
+
+  .image-area {
+    width: 100%; max-width: 160px; height: 160px; border-radius: 12px; overflow: hidden;
+    background: white; display: flex; align-items: center; justify-content: center;
+    font-size: 4.5rem; border: 1px solid var(--border); margin-bottom: 8px; flex-shrink: 0;
+  }
+  .image-area img {
+    width: 100%; height: 100%; object-fit: contain; background: white;
+  }
+  .image-area.hidden { display: none; }
+
+  /* 例文2本（none タイプ用） */
+  .example2-block {
+    display: none;
+    width: 100%;
+    background: rgba(245,166,35,0.05);
+    border: 1px solid rgba(245,166,35,0.2);
+    border-radius: 12px;
+    padding: 12px 18px;
+    margin-top: -8px;
+  }
+  .example2-block.visible { display: block; }
+  .example2-label {
+    font-size: 0.68rem; color: var(--accent); letter-spacing: 0.1em;
+    margin-bottom: 4px; font-weight: 700;
+  }
+  .example2-jp { font-size: 0.9rem; line-height: 1.8; color: var(--text); }
+  .example2-jp mark { background: none; color: var(--accent); font-weight: 700; }
+  .blank2 {
+    display: inline-block; min-width: 80px; height: 1.3em;
+    border-bottom: 2px solid var(--test-accent); vertical-align: bottom;
+    margin: 0 2px; background: rgba(233,69,96,0.06); border-radius: 2px;
+  }
+  .blank2.filled { color: var(--test-accent); font-weight: 700; border-bottom-color: transparent; background: rgba(233,69,96,0.12); padding: 0 6px; }
+
+  .word-block { text-align: center; padding: 8px 0 4px; }
+  .word-reading { font-size: 0.9rem; color: var(--accent2); letter-spacing: 0.15em; margin-bottom: 4px; }
+  .word-main { font-family: 'Zen Kaku Gothic New', sans-serif; font-size: 3rem; font-weight: 900; line-height: 1; }
+  .word-romaji { font-size: 0.8rem; color: var(--muted); margin-top: 6px; }
+
+  .word-block.hidden .word-main,
+  .word-block.hidden .word-reading,
+  .word-block.hidden .word-romaji { filter: blur(8px); user-select: none; transition: filter 0.3s; }
+  .word-block.revealed .word-main,
+  .word-block.revealed .word-reading,
+  .word-block.revealed .word-romaji { filter: none; transition: filter 0.3s; }
+
+  .answer-hint { display: none; width: 100%; max-width: 320px; text-align: center; margin: 4px 0; }
+  body.test-mode .answer-hint { display: none; }
+  .hint-btn {
+    background: rgba(233,69,96,0.12); border: 1px solid rgba(233,69,96,0.3); color: var(--test-accent);
+    border-radius: 8px; padding: 8px 20px; font-family: 'Noto Sans JP', sans-serif;
+    font-size: 0.85rem; font-weight: 700; cursor: pointer; width: 100%; transition: all 0.2s;
+  }
+  .hint-btn:hover { background: rgba(233,69,96,0.22); }
+  .hint-btn.revealed { background: rgba(233,69,96,0.25); color: white; }
+
+  .example-block {
+    width: 100%; background: rgba(255,255,255,0.03); border: 1px solid var(--border);
+    border-radius: 12px; padding: 14px 18px; display: flex; align-items: flex-start; gap: 12px;
+  }
+  .example-text { flex: 1; }
+  .example-jp { font-size: 0.95rem; line-height: 1.8; color: var(--text); }
+  .example-jp mark { background: none; color: var(--accent); font-weight: 700; }
+
+  .blank {
+    display: inline-block; min-width: 80px; height: 1.3em;
+    border-bottom: 2px solid var(--test-accent); vertical-align: bottom;
+    margin: 0 2px; background: rgba(233,69,96,0.06); border-radius: 2px; transition: all 0.3s;
+  }
+  .blank.filled {
+    color: var(--test-accent); font-weight: 700;
+    border-bottom-color: transparent; background: rgba(233,69,96,0.12); padding: 0 6px;
+  }
+
+  .speak-btn {
+    background: none; border: 1px solid var(--border); border-radius: 8px;
+    color: var(--accent2); cursor: pointer; padding: 6px 10px; font-size: 1.1rem;
+    transition: all 0.2s; flex-shrink: 0; margin-top: 2px;
+  }
+  .speak-btn:hover { background: rgba(78,205,196,0.12); border-color: var(--accent2); }
+  .speak-btn.playing { animation: pulse 0.6s ease-in-out infinite alternate; }
+  body.test-mode .speak-btn { display: none; }
+  @keyframes pulse { from { transform: scale(1); } to { transform: scale(1.15); } }
+
+  /* SELF JUDGE */
+  .self-judge { display: none; width: 100%; max-width: 700px; gap: 10px; margin-bottom: 16px; }
+  body.test-mode .self-judge { display: none; }
+  .judge-btn {
+    flex: 1; padding: 12px; border: none; border-radius: 10px;
+    font-family: 'Noto Sans JP', sans-serif; font-weight: 700; font-size: 0.9rem;
+    cursor: pointer; transition: all 0.2s; opacity: 0.35;
+  }
+  .judge-btn.enabled { opacity: 1; }
+  .judge-correct { background: rgba(78,205,196,0.15); color: var(--accent2); border: 1px solid rgba(78,205,196,0.3); }
+  .judge-correct.enabled:hover { background: rgba(78,205,196,0.28); transform: translateY(-1px); }
+  .judge-wrong   { background: rgba(233,69,96,0.15); color: var(--test-accent); border: 1px solid rgba(233,69,96,0.3); }
+  .judge-wrong.enabled:hover { background: rgba(233,69,96,0.28); transform: translateY(-1px); }
+
+  /* CONTROLS */
+  .controls {
+    width: 100%; max-width: 700px; display: flex; gap: 12px;
+    justify-content: center; flex-wrap: wrap; margin-bottom: 20px;
+  }
+  .btn {
+    border: none; border-radius: 10px; cursor: pointer;
+    font-family: 'Noto Sans JP', sans-serif; font-weight: 700; font-size: 0.9rem;
+    padding: 14px 28px; transition: all 0.2s;
+  }
+  .btn-main { background: linear-gradient(135deg, var(--accent2), #38b2ac); color: #0f1923; flex: 1; max-width: 240px; }
+  .btn-main:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(78,205,196,0.35); }
+  body.test-mode .btn-main { background: linear-gradient(135deg, var(--test-accent), #c23152); color: white; }
+  body.test-mode .btn-main:hover { box-shadow: 0 8px 24px rgba(233,69,96,0.35); }
+  .btn-secondary { background: rgba(255,255,255,0.06); color: var(--muted); border: 1px solid var(--border); padding: 14px 20px; }
+  .btn-secondary:hover { background: rgba(255,255,255,0.10); color: var(--text); }
+  .btn-auto { background: rgba(245,166,35,0.12); color: var(--accent); border: 1px solid rgba(245,166,35,0.3); padding: 14px 20px; font-size: 0.85rem; }
+  .btn-auto.active { background: var(--accent); color: #0f1923; }
+  body.test-mode .btn-auto { display: none; }
+
+  /* PRINT PANEL */
+  .print-panel {
+    display: none; width: 100%; max-width: 700px;
+    background: var(--card-bg); border: 1px solid rgba(167,139,250,0.3);
+    border-radius: 20px; padding: 28px 32px; margin-bottom: 24px;
+  }
+  .print-panel.open { display: block; }
+  .print-panel h2 { font-family: 'Zen Kaku Gothic New', sans-serif; font-size: 1.1rem; font-weight: 900; color: #a78bfa; margin-bottom: 16px; }
+  .print-panel p { font-size: 0.85rem; color: var(--muted); margin-bottom: 16px; line-height: 1.7; }
+
+  .print-options { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 20px; }
+  .print-opt {
+    display: flex; align-items: center; gap: 8px;
+    background: rgba(255,255,255,0.04); border: 1px solid var(--border);
+    border-radius: 8px; padding: 8px 14px; cursor: pointer; font-size: 0.85rem; color: var(--muted); transition: all 0.2s;
+  }
+  .print-opt:hover { border-color: #a78bfa; color: var(--text); }
+  .print-opt input { accent-color: #a78bfa; }
+
+  .btn-print {
+    background: linear-gradient(135deg, #a78bfa, #7c3aed); color: white; border: none;
+    border-radius: 10px; padding: 12px 28px; font-family: 'Noto Sans JP', sans-serif;
+    font-weight: 700; font-size: 0.9rem; cursor: pointer; transition: all 0.2s;
+  }
+  .btn-print:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(124,58,237,0.4); }
+
+  /* WORD LIST */
+  .list-toggle {
+    background: none; border: 1px solid var(--border); color: var(--muted);
+    font-size: 0.8rem; padding: 8px 16px; border-radius: 8px; cursor: pointer;
+    font-family: inherit; transition: all 0.2s; margin-bottom: 16px;
+  }
+  .list-toggle:hover { color: var(--text); border-color: var(--muted); }
+  .word-list { width: 100%; max-width: 700px; display: none; flex-wrap: wrap; gap: 8px; margin-bottom: 24px; }
+  .word-list.open { display: flex; }
+  .word-chip {
+    background: var(--card-bg); border: 1px solid var(--border);
+    border-radius: 8px; padding: 6px 14px; font-size: 0.85rem;
+    cursor: pointer; transition: all 0.2s; color: var(--muted);
+  }
+  .word-chip:hover { border-color: var(--accent2); color: var(--text); }
+  .word-chip.seen    { color: var(--accent2); border-color: rgba(78,205,196,0.3); }
+  .word-chip.correct { color: var(--accent2); border-color: var(--accent2); background: rgba(78,205,196,0.08); }
+  .word-chip.wrong   { color: var(--test-accent); border-color: var(--test-accent); background: rgba(233,69,96,0.08); }
+
+
+  /* 英訳表示 */
+  .en-toggle {
+    background: rgba(255,255,255,0.06); border: 1px solid var(--border);
+    border-radius: 8px; color: var(--muted); font-family: 'Noto Sans JP', sans-serif;
+    font-size: 0.8rem; font-weight: 700; padding: 6px 14px; cursor: pointer;
+    transition: all 0.2s; margin-bottom: 8px;
+  }
+  .en-toggle:hover { color: var(--text); border-color: var(--muted); }
+  .en-toggle.active { background: rgba(78,205,196,0.15); border-color: var(--accent2); color: var(--accent2); }
+
+  .word-en {
+    display: none;
+    font-size: 1rem; color: var(--accent2); letter-spacing: 0.05em;
+    margin-top: 6px; font-weight: 700;
+  }
+  .word-en.visible { display: block; }
+  /* LESSON SELECTOR */
+  .lesson-selector {
+    width: 100%; max-width: 700px;
+    display: flex; align-items: center; gap: 8px;
+    margin-bottom: 16px; flex-wrap: wrap;
+  }
+  .lesson-label {
+    font-size: 0.75rem; color: var(--muted); letter-spacing: 0.1em;
+    white-space: nowrap; font-weight: 700;
+  }
+  .lesson-btns { display: flex; gap: 6px; flex-wrap: wrap; flex: 1; }
+  .lesson-btn {
+    border: 1.5px solid rgba(255,255,255,0.25); border-radius: 8px;
+    background: rgba(255,255,255,0.04); color: var(--muted);
+    font-family: 'Noto Sans JP', sans-serif; font-size: 0.8rem; font-weight: 700;
+    padding: 6px 14px; cursor: pointer; transition: all 0.2s; white-space: nowrap;
+  }
+  .lesson-btn:hover { border-color: var(--accent2); color: var(--text); }
+  .lesson-btn.active {
+    background: rgba(78,205,196,0.15); border-color: var(--accent2); color: var(--accent2);
+  }
+  .lesson-btn.all.active {
+    background: rgba(245,166,35,0.15); border-color: var(--accent); color: var(--accent);
+  }
+
+
+  /* WORD GROUP MODE */
+  /* word-group shown in test-mode */
+
+  .word-group {
+    display: none;
+    width: 100%; max-width: 700px;
+    flex-wrap: wrap; gap: 8px;
+    justify-content: center;
+    margin-bottom: 16px;
+  }
+  body.test-mode .word-group { display: flex; }
+
+  .wg-btn {
+    border: 2px solid #ffffff;
+    border-radius: 10px;
+    background: #2a4a6b;
+    color: #ffffff !important;
+    font-family: 'Noto Sans JP', sans-serif;
+    font-size: 1rem; font-weight: 900;
+    padding: 10px 18px;
+    cursor: pointer; transition: all 0.2s;
+    min-width: 80px; text-align: center;
+    -webkit-text-fill-color: #ffffff;
+  }
+  .wg-btn:disabled {
+    border: 2px solid rgba(255,255,255,0.6);
+    background: rgba(255,255,255,0.18);
+    color: #ffffff;
+    opacity: 1;
+    cursor: default;
+  }
+  .wg-btn:hover { background: rgba(233,69,96,0.3); border-color: var(--test-accent); }
+  .wg-btn.correct-ans {
+    background: rgba(78,205,196,0.2); border-color: var(--accent2); color: var(--accent2);
+    animation: popIn 0.3s cubic-bezier(0.34,1.56,0.64,1);
+  }
+  .wg-btn.wrong-ans {
+    background: rgba(233,69,96,0.2); border-color: var(--test-accent); color: var(--test-accent);
+    animation: shake 0.3s ease;
+  }
+  .wg-btn:disabled { opacity: 0.5; cursor: default; }
+
+  .wg-result {
+    display: none; width: 100%; text-align: center;
+    font-size: 1.1rem; font-weight: 700; padding: 8px;
+  }
+  body.test-mode .wg-result { display: block; }
+
+  @keyframes popIn { from{transform:scale(0.9)} to{transform:scale(1)} }
+  @keyframes shake {
+    0%{transform:translateX(0)} 25%{transform:translateX(-6px)}
+    75%{transform:translateX(6px)} 100%{transform:translateX(0)}
+  }
+
+  /* PRINT STYLES */
+  @media print {
+    body > * { display: none !important; }
+    #printSheet { display: block !important; font-family: 'Noto Sans JP', sans-serif; color: black; background: white; padding: 16px; }
+  }
+  #printSheet { display: none; }
+  #printSheet .sheet-title { font-size: 16px; font-weight: bold; margin-bottom: 4px; }
+  #printSheet .sheet-meta { font-size: 12px; color: #555; margin-bottom: 16px; }
+  #printSheet table { width: 100%; border-collapse: collapse; }
+  #printSheet th { background: #1a2633; color: white; padding: 8px 10px; font-size: 11px; border: 1px solid #bbb; text-align: left; }
+  #printSheet td { padding: 9px 10px; border: 1px solid #ddd; font-size: 13px; vertical-align: middle; }
+  #printSheet tr:nth-child(even) td { background: #f7f9fb; }
+  #printSheet .num-col { width: 32px; text-align: center; color: #888; font-size: 11px; }
+  #printSheet .emoji-col { width: 38px; text-align: center; font-size: 18px; }
+  #printSheet .write-col { min-width: 110px; }
+  #printSheet .blank-line { display: inline-block; width: 88px; border-bottom: 1.5px solid #333; margin: 0 2px; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1 id="pageTitle">単語カード ／ 初中級（9〜34課）</h1>
+  <span class="counter" id="counter">1 / 25</span>
+</header>
+
+<div class="mode-switcher">
+  <button class="mode-btn active-study" id="btnStudy" onclick="setMode('study')">📖 学習モード</button>
+  <button class="mode-btn" id="btnTest"  onclick="setMode('test')">✏️ テストモード</button>
+  <button class="mode-btn" id="btnPrint" onclick="setMode('print')">🖨️ 印刷ワークシート</button>
+</div>
+
+<div class="lesson-selector" id="lessonSelector">
+  <span class="lesson-label">📚 課：</span>
+  <div class="lesson-btns" id="lessonBtns"></div>
+</div>
+
+<div class="progress-bar"><div class="progress-fill" id="progress" style="width:4%"></div></div>
+
+<div class="score-bar">
+  <div class="score-item score-correct"><div class="score-num" id="scoreCorrect">0</div><div class="score-label">正解 ✓</div></div>
+  <div class="score-item score-wrong"><div class="score-num" id="scoreWrong">0</div><div class="score-label">要復習 ✗</div></div>
+  <div class="score-item score-remain"><div class="score-num" id="scoreRemain">25</div><div class="score-label">残り</div></div>
+</div>
+
+<div class="card-area" id="cardArea">
+  <div class="card" id="card">
+    <span class="test-badge">TEST</span>
+    <span class="card-num" id="cardNum">#01</span>
+    <div class="image-area" id="imageArea">📖</div>
+    <div class="word-block" id="wordBlock">
+      <div class="word-reading" id="reading">ほんぶん</div>
+      <div class="word-main" id="wordMain">本文</div>
+      <div class="word-romaji" id="romaji"></div>
+      <div class="word-en" id="wordEn"></div>
+    </div>
+    <div class="answer-hint">
+      <button class="hint-btn" id="hintBtn" onclick="revealAnswer()">👁 答えを確認する</button>
+    </div>
+    <div class="example-block">
+      <div class="example-text"><div class="example-jp" id="exampleJp"></div></div>
+      <button class="speak-btn" id="speakBtn" onclick="speakExample()">🔊</button>
+    </div>
+    <div class="example2-block" id="example2Block">
+      <div class="example2-label">例文 ②</div>
+      <div class="example2-jp" id="exampleJp2"></div>
+    </div>
+  </div>
+</div>
+
+<div class="word-group" id="wordGroup"></div>
+<div class="wg-result" id="wgResult">　</div>
+
+<div class="self-judge">
+  <button class="judge-btn judge-correct" id="judgeCorrect" onclick="judge(true)">⭕ 書けた！</button>
+  <button class="judge-btn judge-wrong"   id="judgeWrong"   onclick="judge(false)">✗ もう一度</button>
+</div>
+
+<div class="controls" id="controls">
+  <button class="btn btn-secondary" onclick="prevCard()">◀ 前へ</button>
+  <button class="btn btn-main" onclick="nextCard()">次の単語 ▶</button>
+  <button class="btn btn-secondary" onclick="shuffleCards()">🔀 シャッフル</button>
+  <button class="btn btn-auto" id="autoBtn" onclick="toggleAuto()">▶ 自動再生</button>
+</div>
+
+<div class="print-panel" id="printPanel">
+  <h2>🖨️ 印刷ワークシート</h2>
+  <p>印刷すると穴あき例文プリントになります。学生がノートに書き取りをして自己採点できます。</p>
+  <div class="print-options">
+    <label class="print-opt"><input type="checkbox" id="optEmoji" checked> 絵表示</label>
+    <label class="print-opt"><input type="checkbox" id="optReading"> 読み仮名表示</label>
+    <label class="print-opt"><input type="checkbox" id="optExample" checked> 穴あき例文</label>
+    <label class="print-opt"><input type="checkbox" id="optWriteCol" checked> 書き取り欄</label>
+    <label class="print-opt"><input type="checkbox" id="optWordGroup" checked> 語群表示</label>
+  </div>
+  <button class="btn-print" onclick="printSheet()">🖨️ 印刷する / PDFで保存</button>
+</div>
+
+<button class="en-toggle" id="enToggle" onclick="toggleEn()">🌐 英訳を表示する</button>
+<button class="list-toggle" onclick="toggleList()">📋 単語一覧を見る</button>
+<div class="word-list" id="wordList"></div>
+<div id="printSheet"></div>
+<div id="printOverlay" style="display:none;"></div>
+
+<script>
+const vocab = [
+  { lesson:"9", word:"コンピューター", reading:"コンピューター", romaji:"", illus:"emoji", emoji:"💻", example:"毎日{コンピューター}で仕事をします。", plain:"毎日コンピューターで仕事をします。", en:"computer" },
+  { lesson:"9", word:"説明", reading:"せつめい", romaji:"", illus:"image", emoji:"", image:"9ka/setsumei.png", example:"先生は新しい文法を{説明}してくれました。", plain:"先生は新しい文法を説明してくれました。", en:"explanation" },
+  { lesson:"9", word:"学生証", reading:"がくせいしょう", romaji:"", illus:"image", emoji:"", image:"9ka/gakuseisyou.png", example:"図書館に入るとき、{学生証}を見せてください。", plain:"図書館に入るとき、学生証を見せてください。", en:"student ID" },
+  { lesson:"9", word:"持って行く", reading:"もっていく", romaji:"", illus:"image", emoji:"", image:"9ka/motteiku.png", example:"明日、教科書を{持って行き}ます。", plain:"明日、教科書を持って行きます。", en:"take" },
+  { lesson:"9", word:"話す", reading:"はなす", romaji:"", illus:"image", emoji:"", image:"9ka/hanasu.png", example:"友だちと日本語で{話します}。", plain:"友だちと日本語で話します。", en:"talk" },
+  { lesson:"9", word:"飲み物", reading:"のみもの", romaji:"", illus:"image", emoji:"", image:"9ka/nomimono.png", example:"暑いので{飲み物}を買いました。", plain:"暑いので飲み物を買いました。", en:"drinks" },
+  { lesson:"9", word:"入れる", reading:"かばんにいれる", romaji:"", illus:"image", emoji:"", image:"9ka/ireru.png", example:"かばんに教科書を{入れて}ください。", plain:"かばんに教科書を入れてください。", en:"put into (a bag)" },
+  { lesson:"9", word:"持つ", reading:"もつ", romaji:"", illus:"image", emoji:"", image:"9ka/motsu.png", example:"重い荷物を一緒に{持って}ください。", plain:"重い荷物を一緒に持ってください。", en:"hold, have" },
+  { lesson:"9", word:"呼ぶ", reading:"よぶ", romaji:"", illus:"image", emoji:"", image:"9ka/yobu.png", example:"先生を{呼んで}きてください。", plain:"先生を呼んできてください。", en:"call" },
+  { lesson:"9", word:"死ぬ", reading:"しぬ", romaji:"", illus:"image", emoji:"", image:"9ka/shinu.png", example:"その映画の主人公は最後に{死にます}。", plain:"その映画の主人公は最後に死にます。", en:"die" },
+  { lesson:"9", word:"さわぐ", reading:"さわぐ", romaji:"", illus:"image", emoji:"", image:"9ka/sawagu.png", example:"図書館の中で{さわがない}でください。", plain:"図書館の中でさわがないでください。", en:"make noise" },
+  { lesson:"9", word:"もう一度", reading:"もういちど", romaji:"", illus:"image", emoji:"", image:"9ka/mouichido.png", example:"{もう一度}説明してもらえますか。", plain:"もう一度説明してもらえますか。", en:"again, one more time" },
+  { lesson:"9", word:"言う", reading:"いう", romaji:"", illus:"image", emoji:"", image:"9ka/iu.png", example:"先生がよくできましたと{言いました}。", plain:"先生がよくできましたと言いました。", en:"say" },
+  { lesson:"9", word:"遅れる", reading:"おくれる", romaji:"", illus:"image", emoji:"", image:"9ka/okureru.png", example:"電車が止まって、授業に{遅れました}。", plain:"電車が止まって、授業に遅れました。", en:"be late" },
+  { lesson:"9", word:"泳ぐ", reading:"およぐ", romaji:"", illus:"image", emoji:"", image:"9ka/oyogu.png", example:"夏休みに海で{泳ぎました}。", plain:"夏休みに海で泳ぎました。", en:"swim" },
+  { lesson:"9", word:"探す", reading:"さがす", romaji:"", illus:"image", emoji:"", image:"9ka/sagasu.png", example:"財布を{探して}いますが、見つかりません。", plain:"財布を探していますが、見つかりません。", en:"look for" },
+  { lesson:"9", word:"説明する", reading:"せつめいする", romaji:"", illus:"image", emoji:"", image:"9ka/setumeisuru.png", example:"使い方を{説明して}もらえますか。", plain:"使い方を説明してもらえますか。", en:"explain" },
+  { lesson:"9", word:"押す", reading:"おす", romaji:"", illus:"image", emoji:"", image:"9ka/osu.png", example:"このボタンを{押して}ください。", plain:"このボタンを押してください。", en:"push" },
+  { lesson:"9", word:"教える", reading:"おしえる", romaji:"", illus:"image", emoji:"", image:"9ka/michiwooshieru.png", example:"道を{教えて}もらえますか。", plain:"道を教えてもらえますか。", en:"teach" },
+  { lesson:"9", word:"暗証番号", reading:"あんしょうばんごう", romaji:"", illus:"image", emoji:"", image:"9ka/anshobango.png", example:"ATMで{暗証番号}を入力します。", plain:"ATMで暗証番号を入力します。", en:"PIN，password" },
+  { lesson:"9", word:"ふたをする", reading:"ふたをする", romaji:"", illus:"image", emoji:"", image:"9ka/futa.png", example:"なべに{ふたをして}、5分待ちます。", plain:"なべにふたをして、5分待ちます。", en:"cover (a lid)" },
+  { lesson:"9", word:"ボタンをおす", reading:"ボタンをおす", romaji:"", illus:"image", emoji:"", image:"9ka/botanoosu.png", example:"スタートの{ボタンをおして}ください。", plain:"スタートのボタンをおしてください。", en:"(press/push) a button" },
+  { lesson:"9", word:"せんたくもの", reading:"せんたくもの", romaji:"", illus:"image", emoji:"", image:"9ka/sentakumono.png", example:"{せんたくもの}を洗濯機に入れました。", plain:"せんたくものを洗濯機に入れました。", en:"the laundry" },
+  { lesson:"9", word:"洗剤", reading:"せんざい", romaji:"", illus:"image", emoji:"", image:"9ka/senzai.png", example:"{洗剤}を入れすぎると泡が出すぎます。", plain:"洗剤を入れすぎると泡が出すぎます。", en:"detergent" },
+  { lesson:"9", word:"着物", reading:"きもの", romaji:"", illus:"emoji", emoji:"👘", example:"成人式に{着物}を着ました。", plain:"成人式に着物を着ました。", en:"kimono" },
+  { lesson:"10", word:"予定", reading:"よてい", romaji:"", illus:"image", emoji:"", image:"10ka/yotei.png", example:"来週、京都へ行く{予定}があります。", plain:"来週、京都へ行く予定があります。", en:"schedule, plan" },
+  { lesson:"10", word:"新幹線", reading:"しんかんせん", romaji:"", illus:"emoji", emoji:"🚄", example:"東京から大阪まで{新幹線}で行きます。", plain:"東京から大阪まで新幹線で行きます。", en:"Shinkansen (bullet train)" },
+  { lesson:"10", word:"駅を出る", reading:"えきをでる", romaji:"", illus:"image", emoji:"", image:"10ka/ekiwoderu.png", example:"{駅を出る}と、すぐにバス停があります。", plain:"駅を出ると、すぐにバス停があります。", en:"leave (Tokyo station)" },
+  { lesson:"10", word:"着く", reading:"つく", romaji:"", illus:"image", emoji:"", image:"10ka/tuku.png", example:"新幹線で3時間で大阪に{着きます}。", plain:"新幹線で3時間で大阪に着きます。", en:"arrive" },
+  { lesson:"10", word:"降りる", reading:"おりる", romaji:"", illus:"image", emoji:"", image:"10ka/oriru.png", example:"次の駅で{降りて}ください。", plain:"次の駅で降りてください。", en:"get off, go down, get down" },
+  { lesson:"10", word:"乗る", reading:"のる", romaji:"", illus:"image", emoji:"", image:"10ka/noru.png", example:"バスに{乗って}学校へ行きます。", plain:"バスに乗って学校へ行きます。", en:"ride, board" },
+  { lesson:"10", word:"途中", reading:"とちゅう", romaji:"", illus:"image", emoji:"", image:"10ka/tochuu.png", example:"{途中}でコンビニに寄りました。", plain:"途中でコンビニに寄りました。", en:"on the way, halfway" },
+  { lesson:"10", word:"休憩する", reading:"きゅうけいする", romaji:"", illus:"image", emoji:"", image:"10ka/kyuukei.png", example:"長い旅行なので、{休憩して}から出発します。", plain:"長い旅行なので、休憩してから出発します。", en:"rest, take a break" },
+  { lesson:"10", word:"時間がかかる", reading:"じかんがかかる", romaji:"", illus:"image", emoji:"", image:"10ka/jikanngakakaru.png", example:"ここから駅まで30分{時間がかかります}。", plain:"ここから駅まで30分時間がかかります。", en:"take (time)" },
+  { lesson:"10", word:"電車", reading:"でんしゃ", romaji:"", illus:"emoji", emoji:"🚃", example:"{電車}で会社へ行きます。", plain:"電車で会社へ行きます。", en:"train" },
+  { lesson:"10", word:"歩く", reading:"あるく", romaji:"", illus:"image", emoji:"", image:"10ka/aruku.png", example:"駅から学校まで10分{歩きます}。", plain:"駅から学校まで10分歩きます。", en:"walk" },
+  { lesson:"10", word:"乗り換える", reading:"のりかえる", romaji:"", illus:"image", emoji:"", image:"10ka/norikaeru.png", example:"渋谷駅で地下鉄に{乗り換えます}。", plain:"渋谷駅で地下鉄に乗り換えます。", en:"change (trains)" },
+  { lesson:"10", word:"出発する", reading:"しゅっぱつする", romaji:"", illus:"image", emoji:"", image:"10ka/shuppatsu.png", example:"朝8時に東京を{出発します}。", plain:"朝8時に東京を出発します。", en:"depart" },
+  { lesson:"10", word:"電話をする", reading:"でんわをする", romaji:"", illus:"image", emoji:"", image:"10ka/dennwasuru.png", example:"友だちに{電話をして}、待ち合わせ場所を決めました。", plain:"友だちに電話をして、待ち合わせ場所を決めました。", en:"make a phone call" },
+  { lesson:"10", word:"売店", reading:"ばいてん", romaji:"", illus:"image", emoji:"", image:"10ka/baiten.png", example:"駅の{売店}でお弁当を買いました。", plain:"駅の売店でお弁当を買いました。", en:"a kiosk, a store" },
+  { lesson:"10", word:"急ぐ", reading:"いそぐ", romaji:"", illus:"image", emoji:"", image:"10ka/isogu.png", example:"電車に乗り遅れないように{急ぎます}。", plain:"電車に乗り遅れないように急ぎます。", en:"hurry" },
+  { lesson:"10", word:"女性", reading:"じょせい", romaji:"", illus:"image", emoji:"", image:"10ka/josei.png", example:"あの{女性}は私の先生です。", plain:"あの女性は私の先生です。", en:"female" },
+  { lesson:"10", word:"男性", reading:"だんせい", romaji:"", illus:"image", emoji:"", image:"10ka/dansei.png", example:"その{男性}に道を聞きました。", plain:"その男性に道を聞きました。", en:"male" },
+  { lesson:"10", word:"夕食", reading:"ゆうしょく", romaji:"", illus:"image", emoji:"", image:"10ka/yuushoku.png", example:"旅館で{夕食}を食べました。", plain:"旅館で夕食を食べました。", en:"dinner" },
+  { lesson:"10", word:"ゆっくりする", reading:"ゆっくりする", romaji:"", illus:"image", emoji:"", image:"10ka/yukkurisuru.png", example:"休みの日は家で{ゆっくりします}。", plain:"休みの日は家でゆっくりします。", en:"relax, get settled" },
+  { lesson:"11", word:"高校", reading:"こうこう", romaji:"", illus:"image", emoji:"", image:"11ka/koukou.png", example:"{高校}のときは毎日サッカーをしていました。", plain:"高校のときは毎日サッカーをしていました。", en:"high school" },
+  { lesson:"11", word:"卒業する", reading:"そつぎょうする", romaji:"", illus:"image", emoji:"", image:"11ka/sotugyou.png", example:"来年、大学を{卒業します}。", plain:"来年、大学を卒業します。", en:"graduate" },
+  { lesson:"11", word:"勤める", reading:"つとめる", romaji:"", illus:"none", emoji:"", example:"父は銀行に{勤めて}います。", plain:"父は銀行に勤めています。", en:"work at, work for" },
+  { lesson:"11", word:"辞める", reading:"やめる", romaji:"", illus:"image", emoji:"", image:"11ka/yameru.png", example:"仕事を{辞めて}、新しい会社に入りました。", plain:"仕事を辞めて、新しい会社に入りました。", en:"quit" },
+  { lesson:"11", word:"自分", reading:"じぶん", romaji:"", illus:"image", emoji:"", image:"11ka/jibun.png", example:"{自分}でできることは自分でします。", plain:"自分でできることは自分でします。", en:"one's self" },
+  { lesson:"11", word:"デザインする", reading:"デザインする", romaji:"", illus:"none", emoji:"", example:"彼女は服を{デザインする}仕事をしています。", plain:"彼女は服をデザインする仕事をしています。", en:"design" },
+  { lesson:"11", word:"いろいろ", reading:"いろいろ", romaji:"", illus:"image", emoji:"", image:"11ka/iroiro.png", example:"{いろいろ}な国の料理を食べてみたいです。", plain:"いろいろな国の料理を食べてみたいです。", en:"various" },
+  { lesson:"11", word:"服", reading:"ふく", romaji:"", illus:"none", emoji:"", example:"新しい{服}を買いました。", plain:"新しい服を買いました。", en:"clothing" },
+  { lesson:"11", word:"ファッションショー", reading:"ファッションショー", romaji:"", illus:"image", emoji:"", image:"11ka/fasionshoo.png", example:"{ファッションショー}でモデルが歩いていました。", plain:"ファッションショーでモデルが歩いていました。", en:"fashion show" },
+  { lesson:"11", word:"きょうみがある", reading:"きょうみがある", romaji:"", illus:"none", emoji:"", example:"日本の文化に{きょうみがあります}。", plain:"日本の文化にきょうみがあります。", en:"be (interested)" },
+  { lesson:"11", word:"家族", reading:"かぞく", romaji:"", illus:"image", emoji:"", image:"11ka/kazoku.png", example:"{家族}みんなで旅行に行きました。", plain:"家族みんなで旅行に行きました。", en:"family" },
+  { lesson:"11", word:"祖母", reading:"そぼ", romaji:"", illus:"image", emoji:"", image:"11ka/sobo.png", example:"{祖母}は80歳ですが、元気です。", plain:"祖母は80歳ですが、元気です。", en:"grandmother" },
+  { lesson:"11", word:"祖父", reading:"そふ", romaji:"", illus:"image", emoji:"", image:"11ka/sofu.png", example:"{祖父}は料理が上手です。", plain:"祖父は料理が上手です。", en:"grandfather" },
+  { lesson:"11", word:"両親", reading:"りょうしん", romaji:"", illus:"none", emoji:"", example:"{両親}に電話をして、元気かどうか聞きました。", plain:"両親に電話をして、元気かどうか聞きました。", en:"parents" },
+  { lesson:"11", word:"母", reading:"はは", romaji:"", illus:"image", emoji:"", image:"11ka/haha.png", example:"{母}は毎朝早く起きて、朝ごはんを作ります。", plain:"母は毎朝早く起きて、朝ごはんを作ります。", en:"mother" },
+  { lesson:"11", word:"父", reading:"ちち", romaji:"", illus:"image", emoji:"", image:"11ka/chichi.png", example:"{父}は会社員です。", plain:"父は会社員です。", en:"father" },
+  { lesson:"11", word:"兄弟", reading:"きょうだい", romaji:"", illus:"image", emoji:"", image:"11ka/kyoudai.png", example:"{兄弟}は3人います。", plain:"兄弟は3人います。", en:"siblings" },
+  { lesson:"11", word:"妹", reading:"いもうと", romaji:"", illus:"image", emoji:"", image:"11ka/imouto.ong", example:"{妹}は高校生です。", plain:"妹は高校生です。", en:"younger sister" },
+  { lesson:"11", word:"弟", reading:"おとうと", romaji:"", illus:"image", emoji:"", image:"11ka/otouto.png", example:"{弟}とよく一緒にゲームをします。", plain:"弟とよく一緒にゲームをします。", en:"younger brother" },
+  { lesson:"11", word:"姉", reading:"あね", romaji:"", illus:"image", emoji:"", image:"11ka/ane.png", example:"{姉}は料理が上手です。", plain:"姉は料理が上手です。", en:"older sister" },
+  { lesson:"11", word:"兄", reading:"あに", romaji:"", illus:"image", emoji:"", image:"11ka/ani.png", example:"{兄}は東京の大学に通っています。", plain:"兄は東京の大学に通っています。", en:"older brother" },
+  { lesson:"11", word:"将来", reading:"しょうらい", romaji:"", illus:"none", emoji:"", example:"{将来}は日本語の先生になりたいです。", plain:"将来は日本語の先生になりたいです。", en:"the future" },
+  { lesson:"11", word:"デザイナーになる", reading:"デザイナーになる", romaji:"", illus:"none", emoji:"", example:"{デザイナーになる}ために、専門学校で勉強しています。", plain:"デザイナーになるために、専門学校で勉強しています。", en:"become (a designer)" },
+  { lesson:"11", word:"決める", reading:"きめる", romaji:"", illus:"image", emoji:"", image:"11ka/kimeru.png", example:"大学を{決めて}から、親に相談しました。", plain:"大学を決めてから、親に相談しました。", en:"decide, decide" },
+  { lesson:"11", word:"専門学校", reading:"せんもんがっこう", romaji:"", illus:"emoji", emoji:"🏫", example:"{専門学校}でコンピューターを勉強しています。", plain:"専門学校でコンピューターを勉強しています。", en:"professional school" },
+  { lesson:"11", word:"相談する", reading:"そうだんする", romaji:"", illus:"image", emoji:"", image:"11ka/soudan.png", example:"進路について先生に{相談しました}。", plain:"進路について先生に相談しました。", en:"consult, discuss" },
+  { lesson:"11", word:"調べる", reading:"しらべる", romaji:"", illus:"image", emoji:"", image:"11ka/shiraberu.png", example:"インターネットで学校のことを{調べました}。", plain:"インターネットで学校のことを調べました。", en:"investigate" },
+  { lesson:"12", word:"フライパン", reading:"フライパン", romaji:"", illus:"emoji", emoji:"🍳", example:"{フライパン}に油を入れて、温めます。", plain:"フライパンに油を入れて、温めます。", en:"frying pan" },
+  { lesson:"12", word:"たまねぎ", reading:"たまねぎ", romaji:"", illus:"emoji", emoji:"🧅", example:"{たまねぎ}を薄く切ってください。", plain:"たまねぎを薄く切ってください。", en:"onion" },
+  { lesson:"12", word:"切る", reading:"きる", romaji:"", illus:"none", emoji:"", example:"野菜を小さく{切って}ください。", plain:"野菜を小さく切ってください。", en:"cut" },
+  { lesson:"12", word:"大きさ", reading:"おおきさ", romaji:"", illus:"none", emoji:"", example:"この箱の{大きさ}はちょうどいいです。", plain:"この箱の大きさはちょうどいいです。", en:"size" },
+  { lesson:"12", word:"半分", reading:"はんぶん", romaji:"", illus:"none", emoji:"", example:"リンゴを{半分}に切りました。", plain:"リンゴを半分に切りました。", en:"half" },
+  { lesson:"12", word:"薄い", reading:"うすい", romaji:"", illus:"none", emoji:"", example:"野菜を{薄く}切ってフライパンで炒めます。", plain:"野菜を薄く切ってフライパンで炒めます。", en:"thin" },
+  { lesson:"12", word:"牛肉", reading:"ぎゅうにく", romaji:"", illus:"none", emoji:"", example:"{牛肉}と野菜を一緒に炒めました。", plain:"牛肉と野菜を一緒に炒めました。", en:"beef" },
+  { lesson:"12", word:"調味料", reading:"ちょうみりょう", romaji:"", illus:"none", emoji:"", example:"しょうゆやみりんなどの{調味料}を入れます。", plain:"しょうゆやみりんなどの調味料を入れます。", en:"seasoning, condiments" },
+  { lesson:"12", word:"火をつける", reading:"ひをつける", romaji:"", illus:"none", emoji:"", example:"コンロの{火をつけて}、なべを温めます。", plain:"コンロの火をつけて、なべを温めます。", en:"turn on (a stove)" },
+  { lesson:"12", word:"強さ", reading:"つよさ", romaji:"", illus:"none", emoji:"", example:"火の{強さ}を中火にしてください。", plain:"火の強さを中火にしてください。", en:"strength" },
+  { lesson:"12", word:"中火", reading:"ちゅうび", romaji:"", illus:"none", emoji:"", example:"{中火}で10分煮てください。", plain:"中火で10分煮てください。", en:"medium flame" },
+  { lesson:"12", word:"煮る", reading:"にる", romaji:"", illus:"none", emoji:"", example:"野菜を30分{煮ます}。", plain:"野菜を30分煮ます。", en:"boil" },
+  { lesson:"12", word:"質問", reading:"しつもん", romaji:"", illus:"none", emoji:"", example:"わからないことがあれば、{質問}してください。", plain:"わからないことがあれば、質問してください。", en:"question" },
+  { lesson:"12", word:"材料", reading:"ざいりょう", romaji:"", illus:"none", emoji:"", example:"カレーの{材料}を買いに行きます。", plain:"カレーの材料を買いに行きます。", en:"ingredients" },
+  { lesson:"12", word:"薄切り", reading:"うすぎり", romaji:"", illus:"none", emoji:"", example:"牛肉は{薄切り}にして使います。", plain:"牛肉は薄切りにして使います。", en:"thin slice" },
+  { lesson:"12", word:"ねぎ", reading:"ねぎ", romaji:"", illus:"none", emoji:"", example:"{ねぎ}を小さく切って、スープに入れます。", plain:"ねぎを小さく切って、スープに入れます。", en:"welsh onion" },
+  { lesson:"12", word:"少々", reading:"さとうしょうしょう", romaji:"", illus:"none", emoji:"", example:"塩を{少々}入れて味を調えます。", plain:"塩を少々入れて味を調えます。", en:"a little bit (of sugar)" },
+  { lesson:"12", word:"ごはん", reading:"ごはん", romaji:"", illus:"emoji", emoji:"🍚", example:"毎朝{ごはん}を食べてから学校へ行きます。", plain:"毎朝ごはんを食べてから学校へ行きます。", en:"(cooked) rice, a meal" },
+  { lesson:"12", word:"大さじ", reading:"おおさじ", romaji:"", illus:"none", emoji:"", example:"しょうゆを{大さじ}2杯入れます。", plain:"しょうゆを大さじ2杯入れます。", en:"tablespoon" },
+  { lesson:"12", word:"しょうゆ", reading:"しょうゆ", romaji:"", illus:"none", emoji:"", example:"{しょうゆ}と砂糖で味をつけます。", plain:"しょうゆと砂糖で味をつけます。", en:"soy sauce" },
+  { lesson:"12", word:"止める", reading:"ひとめる", romaji:"", illus:"none", emoji:"", example:"10分煮たら、火を{止めます}。", plain:"10分煮たら、火を止めます。", en:"turn off (a stove)" },
+  { lesson:"12", word:"うえにのせる", reading:"うえにのせる", romaji:"", illus:"none", emoji:"", example:"ごはんの{うえにのせて}食べます。", plain:"ごはんのうえにのせて食べます。", en:"load (on top)" },
+  { lesson:"12", word:"始める", reading:"はじめる", romaji:"", illus:"none", emoji:"", example:"料理を{始めます}。まず野菜を切ります。", plain:"料理を始めます。まず野菜を切ります。", en:"begin (something)" },
+  { lesson:"12", word:"柔らかい", reading:"やわらかい", romaji:"", illus:"none", emoji:"", example:"長く煮ると、肉が{柔らかく}なります。", plain:"長く煮ると、肉が柔らかくなります。", en:"soft" },
+  { lesson:"12", word:"簡単", reading:"かんたん", romaji:"", illus:"none", emoji:"", example:"この料理は{簡単}に作れます。", plain:"この料理は簡単に作れます。", en:"simple, easy" },
+  { lesson:"12", word:"固い", reading:"かたい", romaji:"", illus:"none", emoji:"", example:"もう少し煮ないと、まだ{固い}です。", plain:"もう少し煮ないと、まだ固いです。", en:"hard" },
+  { lesson:"12", word:"注意する", reading:"ちゅういする", romaji:"", illus:"none", emoji:"", example:"熱いので{注意して}ください。", plain:"熱いので注意してください。", en:"pay attention, warn" },
+  { lesson:"12", word:"温かい", reading:"あたたかい", romaji:"", illus:"none", emoji:"", example:"{温かい}うちに食べてください。", plain:"温かいうちに食べてください。", en:"warm" },
+  { lesson:"12", word:"できあがり", reading:"できあがり", romaji:"", illus:"none", emoji:"", example:"10分経ったら{できあがり}です。", plain:"10分経ったらできあがりです。", en:"completion" },
+  { lesson:"12", word:"ぎゅうどんができる", reading:"ぎゅうどんができる", romaji:"", illus:"none", emoji:"", example:"材料を全部入れると{ぎゅうどんができます}。", plain:"材料を全部入れるとぎゅうどんができます。", en:"finish (beef bowl)" },
+  { lesson:"13", word:"わたしたち", reading:"わたしたち", romaji:"", illus:"none", emoji:"", example:"{わたしたち}のクラスは20人います。", plain:"わたしたちのクラスは20人います。", en:"we, us" },
+  { lesson:"13", word:"インタビュー", reading:"インタビュー", romaji:"", illus:"none", emoji:"", example:"日本人の学生に{インタビュー}しました。", plain:"日本人の学生にインタビューしました。", en:"interview" },
+  { lesson:"13", word:"質問する", reading:"しつもんする", romaji:"", illus:"none", emoji:"", example:"先生に授業のことを{質問しました}。", plain:"先生に授業のことを質問しました。", en:"ask a question" },
+  { lesson:"13", word:"生活", reading:"せいかつ", romaji:"", illus:"none", emoji:"", example:"日本での{生活}に慣れてきました。", plain:"日本での生活に慣れてきました。", en:"life, living" },
+  { lesson:"13", word:"ともだちができる", reading:"ともだちができる", romaji:"", illus:"none", emoji:"", example:"日本語の授業で{ともだちができました}。", plain:"日本語の授業でともだちができました。", en:"make friends" },
+  { lesson:"13", word:"学部", reading:"けいざいがくぶ", romaji:"", illus:"none", emoji:"", example:"経済{学部}で経営を勉強しています。", plain:"経済学部で経営を勉強しています。", en:"(economics) department" },
+  { lesson:"13", word:"どうして", reading:"どうして", romaji:"", illus:"none", emoji:"", example:"{どうして}日本語を勉強しているんですか。", plain:"どうして日本語を勉強しているんですか。", en:"how, why" },
+  { lesson:"13", word:"レポート", reading:"レポート", romaji:"", illus:"emoji", emoji:"📝", example:"今週中に{レポート}を出さなければなりません。", plain:"今週中にレポートを出さなければなりません。", en:"report, term paper" },
+  { lesson:"13", word:"暇", reading:"ひま", romaji:"", illus:"none", emoji:"", example:"今日は{暇}なので、映画を見に行きます。", plain:"今日は暇なので、映画を見に行きます。", en:"free time" },
+  { lesson:"13", word:"施設", reading:"しせつ", romaji:"", illus:"none", emoji:"", example:"この学校には図書館などの{施設}があります。", plain:"この学校には図書館などの施設があります。", en:"facilities" },
+  { lesson:"13", word:"思う", reading:"おもう", romaji:"", illus:"none", emoji:"", example:"日本語は難しいと{思います}。", plain:"日本語は難しいと思います。", en:"think" },
+  { lesson:"13", word:"寂しい", reading:"さびしい", romaji:"", illus:"none", emoji:"", example:"家族と離れていると、{寂しく}なります。", plain:"家族と離れていると、寂しくなります。", en:"lonely" },
+  { lesson:"13", word:"生活について", reading:"せいかつについて", romaji:"", illus:"none", emoji:"", example:"留学{生活について}レポートを書きます。", plain:"留学生活についてレポートを書きます。", en:"concerning (one's livelihood)" },
+  { lesson:"13", word:"発表する", reading:"はっぴょうする", romaji:"", illus:"none", emoji:"", example:"クラスで調べたことを{発表します}。", plain:"クラスで調べたことを発表します。", en:"present" },
+  { lesson:"13", word:"グラフ", reading:"グラフ", romaji:"", illus:"emoji", emoji:"📊", example:"{グラフ}を見ると、増えていることがわかります。", plain:"グラフを見ると、増えていることがわかります。", en:"graph" },
+  { lesson:"13", word:"理由", reading:"りゆう", romaji:"", illus:"none", emoji:"", example:"日本に来た{理由}を教えてください。", plain:"日本に来た理由を教えてください。", en:"reason" },
+  { lesson:"13", word:"驚く", reading:"おどろく", romaji:"", illus:"none", emoji:"", example:"物価の高さに{驚きました}。", plain:"物価の高さに驚きました。", en:"be surprised" },
+  { lesson:"14", word:"休憩時間", reading:"きゅうけいじかん", romaji:"", illus:"none", emoji:"", example:"{休憩時間}に友だちとお茶を飲みました。", plain:"休憩時間に友だちとお茶を飲みました。", en:"break time" },
+  { lesson:"14", word:"集合時間", reading:"しゅうごうじかん", romaji:"", illus:"none", emoji:"", example:"{集合時間}は朝9時です。遅れないでください。", plain:"集合時間は朝9時です。遅れないでください。", en:"meeting time" },
+  { lesson:"14", word:"温泉", reading:"おんせん", romaji:"", illus:"none", emoji:"", example:"旅行で{温泉}に入りました。", plain:"旅行で温泉に入りました。", en:"hot springs, spa" },
+  { lesson:"14", word:"熱い", reading:"あつい", romaji:"", illus:"none", emoji:"", example:"このお風呂は{熱い}ので、気をつけてください。", plain:"このお風呂は熱いので、気をつけてください。", en:"hot (to touch), passionate" },
+  { lesson:"14", word:"気持ちがいい", reading:"きもちがいい", romaji:"", illus:"none", emoji:"", example:"温泉に入ると、{気持ちがいい}です。", plain:"温泉に入ると、気持ちがいいです。", en:"(feel) good" },
+  { lesson:"14", word:"おかず", reading:"おかず", romaji:"", illus:"none", emoji:"", example:"今日の{おかず}は魚と野菜です。", plain:"今日のおかずは魚と野菜です。", en:"side dish" },
+  { lesson:"14", word:"貝", reading:"かい", romaji:"", illus:"none", emoji:"", example:"海で{貝}を拾いました。", plain:"海で貝を拾いました。", en:"clam, shellfish" },
+  { lesson:"14", word:"食べにくい", reading:"たべにくい", romaji:"", illus:"none", emoji:"", example:"この魚は骨が多くて{食べにくい}です。", plain:"この魚は骨が多くて食べにくいです。", en:"hard (to eat)" },
+  { lesson:"14", word:"植物園", reading:"しょくぶつえん", romaji:"", illus:"emoji", emoji:"🌿", example:"{植物園}にいろいろな花が咲いていました。", plain:"植物園にいろいろな花が咲いていました。", en:"botanical garden" },
+  { lesson:"14", word:"道", reading:"みち", romaji:"", illus:"none", emoji:"", example:"{道}が狭くて、車が通れません。", plain:"道が狭くて、車が通れません。", en:"road, path" },
+  { lesson:"14", word:"歩きやすい", reading:"あるきやすい", romaji:"", illus:"none", emoji:"", example:"この靴は{歩きやすい}です。", plain:"この靴は歩きやすいです。", en:"easy to(walk), (walk)able" },
+  { lesson:"14", word:"専門", reading:"せんもん", romaji:"", illus:"none", emoji:"", example:"彼は日本語{専門}の先生です。", plain:"彼は日本語専門の先生です。", en:"specialty, major" },
+  { lesson:"14", word:"言葉", reading:"ことば", romaji:"", illus:"none", emoji:"", example:"難しい{言葉}は辞書で調べます。", plain:"難しい言葉は辞書で調べます。", en:"word" },
+  { lesson:"14", word:"晴れ", reading:"はれ", romaji:"", illus:"none", emoji:"", example:"明日は{晴れ}の予報です。", plain:"明日は晴れの予報です。", en:"clear skies" },
+  { lesson:"14", word:"珍しい", reading:"めずらしい", romaji:"", illus:"none", emoji:"", example:"このお菓子は日本でも{珍しい}ものです。", plain:"このお菓子は日本でも珍しいものです。", en:"rare" },
+  { lesson:"14", word:"帰り", reading:"かえり", romaji:"", illus:"none", emoji:"", example:"{帰り}に駅でお土産を買いました。", plain:"帰りに駅でお土産を買いました。", en:"a return" },
+  { lesson:"14", word:"散歩（を）する", reading:"さんぽをする", romaji:"", illus:"none", emoji:"", example:"朝、公園を{散歩します}。", plain:"朝、公園を散歩します。", en:"take a walk" },
+  { lesson:"15", word:"不動産屋", reading:"ふどうさんや", romaji:"", illus:"none", emoji:"", example:"{不動産屋}でアパートを探しました。", plain:"不動産屋でアパートを探しました。", en:"Realtor's office" },
+  { lesson:"15", word:"どちら", reading:"どちら", romaji:"", illus:"none", emoji:"", example:"AとBの{どちら}がいいですか。", plain:"AとBのどちらがいいですか。", en:"which" },
+  { lesson:"15", word:"同じ", reading:"おなじ", romaji:"", illus:"none", emoji:"", example:"私と{同じ}考えですね。", plain:"私と同じ考えですね。", en:"same" },
+  { lesson:"15", word:"北口", reading:"きたぐち", romaji:"", illus:"none", emoji:"", example:"駅の{北口}を出ると、銀行があります。", plain:"駅の北口を出ると、銀行があります。", en:"north gate" },
+  { lesson:"15", word:"商店街", reading:"しょうてんがい", romaji:"", illus:"none", emoji:"", example:"{商店街}にはいろいろなお店があります。", plain:"商店街にはいろいろなお店があります。", en:"shopping district" },
+  { lesson:"15", word:"家賃", reading:"やちん", romaji:"", illus:"none", emoji:"", example:"このアパートの{家賃}は7万円です。", plain:"このアパートの家賃は7万円です。", en:"rent" },
+  { lesson:"15", word:"人口", reading:"じんこう", romaji:"", illus:"none", emoji:"", example:"東京の{人口}はとても多いです。", plain:"東京の人口はとても多いです。", en:"population" },
+  { lesson:"15", word:"高い", reading:"せたかい", romaji:"", illus:"none", emoji:"", example:"このビルは{高い}ので、遠くからも見えます。", plain:"このビルは高いので、遠くからも見えます。", en:"tall (person's height)" },
+  { lesson:"15", word:"人気", reading:"にんき", romaji:"", illus:"none", emoji:"", example:"あの店はラーメンが{人気}です。", plain:"あの店はラーメンが人気です。", en:"popularity" },
+  { lesson:"15", word:"南口", reading:"みなみぐち", romaji:"", illus:"none", emoji:"", example:"バス停は駅の{南口}にあります。", plain:"バス停は駅の南口にあります。", en:"south gate" },
+  { lesson:"15", word:"それに", reading:"それに", romaji:"", illus:"none", emoji:"", example:"値段が安いです。{それに}、場所も便利です。", plain:"値段が安いです。それに、場所も便利です。", en:"besides, what's more" },
+  { lesson:"15", word:"バス停", reading:"バスてい", romaji:"", illus:"none", emoji:"", example:"{バス停}で10分バスを待ちました。", plain:"バス停で10分バスを待ちました。", en:"bus stop" },
+  { lesson:"15", word:"遠すぎる", reading:"とおすぎる", romaji:"", illus:"none", emoji:"", example:"学校から{遠すぎる}ので、このアパートはやめます。", plain:"学校から遠すぎるので、このアパートはやめます。", en:"too (far)" },
+  { lesson:"15", word:"（６）畳", reading:"６じょう", romaji:"", illus:"none", emoji:"", example:"この部屋は6{畳}です。", plain:"この部屋は6畳です。", en:"(6) tatami mat (room size measurement)" },
+  { lesson:"15", word:"洋室", reading:"ようしつ", romaji:"", illus:"none", emoji:"", example:"{洋室}にはベッドとテーブルがあります。", plain:"洋室にはベッドとテーブルがあります。", en:"Western-style room" },
+  { lesson:"15", word:"台所", reading:"だいどころ", romaji:"", illus:"none", emoji:"", example:"{台所}で料理を作ります。", plain:"台所で料理を作ります。", en:"kitchen" },
+  { lesson:"15", word:"見せる", reading:"みせる", romaji:"", illus:"none", emoji:"", example:"学生証を{見せて}ください。", plain:"学生証を見せてください。", en:"show to" },
+  { lesson:"15", word:"時間", reading:"じかんがある", romaji:"", illus:"none", emoji:"", example:"今、{時間}がありますか。", plain:"今、時間がありますか。", en:"(have, there is) time" },
+  { lesson:"15", word:"時間がある", reading:"じかんがある", romaji:"", illus:"none", emoji:"", example:"今日は{時間があります}か。", plain:"今日は時間がありますか。", en:"have, there is (time)" },
+  { lesson:"16", word:"看護師", reading:"かんごし", romaji:"", illus:"none", emoji:"", example:"{看護師}さんが注射をしてくれました。", plain:"看護師さんが注射をしてくれました。", en:"nurse" },
+  { lesson:"16", word:"保険証", reading:"ほけんしょう", romaji:"", illus:"none", emoji:"", example:"病院に行くとき、{保険証}を持っていきます。", plain:"病院に行くとき、保険証を持っていきます。", en:"insurance card" },
+  { lesson:"16", word:"待合室", reading:"まちあいしつ", romaji:"", illus:"none", emoji:"", example:"{待合室}で10分ほど待ちました。", plain:"待合室で10分ほど待ちました。", en:"waiting room" },
+  { lesson:"16", word:"待つ", reading:"まつ", romaji:"", illus:"none", emoji:"", example:"病院で1時間{待ちました}。", plain:"病院で1時間待ちました。", en:"wait" },
+  { lesson:"16", word:"医師", reading:"いし", romaji:"", illus:"none", emoji:"", example:"{医師}に体の状態を説明しました。", plain:"医師に体の状態を説明しました。", en:"medical doctor" },
+  { lesson:"16", word:"階段", reading:"かいだん", romaji:"", illus:"none", emoji:"", example:"{階段}から落ちてけがをしました。", plain:"階段から落ちてけがをしました。", en:"staircase" },
+  { lesson:"16", word:"落ちる", reading:"おちる", romaji:"", illus:"none", emoji:"", example:"自転車から{落ちて}、ひざをけがしました。", plain:"自転車から落ちて、ひざをけがしました。", en:"fall" },
+  { lesson:"16", word:"ひざ", reading:"ひざ", romaji:"", illus:"none", emoji:"", example:"転んで{ひざ}をすりました。", plain:"転んでひざをすりました。", en:"knees, lap" },
+  { lesson:"16", word:"冷やす", reading:"ひやす", romaji:"", illus:"none", emoji:"", example:"熱があるので、おでこを{冷やします}。", plain:"熱があるので、おでこを冷やします。", en:"cool down (something)" },
+  { lesson:"16", word:"かおがはれる", reading:"はれる", romaji:"", illus:"none", emoji:"", example:"虫に刺されて{かおがはれました}。", plain:"虫に刺されてかおがはれました。", en:"swell" },
+  { lesson:"16", word:"レントゲン", reading:"レントゲン", romaji:"", illus:"none", emoji:"", example:"骨を{レントゲン}で調べました。", plain:"骨をレントゲンで調べました。", en:"X-ray" },
+  { lesson:"16", word:"骨", reading:"ほね", romaji:"", illus:"none", emoji:"", example:"{骨}に異常はありませんでした。", plain:"骨に異常はありませんでした。", en:"bone" },
+  { lesson:"16", word:"異常がある", reading:"いじょうがある", romaji:"", illus:"none", emoji:"", example:"検査の結果、{異常がありました}。", plain:"検査の結果、異常がありました。", en:"there is, have (something wrong)" },
+  { lesson:"16", word:"しっぷ薬", reading:"しっぷやく", romaji:"", illus:"none", emoji:"", example:"ひざに{しっぷ薬}を貼りました。", plain:"ひざにしっぷ薬を貼りました。", en:"poultice" },
+  { lesson:"16", word:"出す", reading:"くすりだす", romaji:"", illus:"none", emoji:"", example:"先生が薬を{出して}くれました。", plain:"先生が薬を出してくれました。", en:"provide (medicine)" },
+  { lesson:"16", word:"はりかえる", reading:"はりかえる", romaji:"", illus:"none", emoji:"", example:"しっぷは毎日{はりかえて}ください。", plain:"しっぷは毎日はりかえてください。", en:"repaper, re-cover" },
+  { lesson:"16", word:"痛みどめ", reading:"いたみどめ", romaji:"", illus:"none", emoji:"", example:"頭が痛いので、{痛みどめ}を飲みました。", plain:"頭が痛いので、痛みどめを飲みました。", en:"painkiller" },
+  { lesson:"16", word:"治る", reading:"なおる", romaji:"", illus:"none", emoji:"", example:"薬を飲んで、風邪が{治りました}。", plain:"薬を飲んで、風邪が治りました。", en:"recover" },
+  { lesson:"16", word:"激しい", reading:"はげしい", romaji:"", illus:"none", emoji:"", example:"{激しい}運動はしばらくやめてください。", plain:"激しい運動はしばらくやめてください。", en:"harsh" },
+  { lesson:"16", word:"運動", reading:"うんどう", romaji:"", illus:"none", emoji:"", example:"毎日30分{運動}しています。", plain:"毎日30分運動しています。", en:"exercise" },
+  { lesson:"16", word:"運動（を）する", reading:"うんどうをする", romaji:"", illus:"none", emoji:"", example:"健康のために毎日{運動します}。", plain:"健康のために毎日運動します。", en:"exercise" },
+  { lesson:"16", word:"受付", reading:"うけつけ", romaji:"", illus:"none", emoji:"", example:"病院の{受付}で名前を書きました。", plain:"病院の受付で名前を書きました。", en:"reception" },
+  { lesson:"16", word:"薬局", reading:"やっきょく", romaji:"", illus:"none", emoji:"", example:"{薬局}で風邪薬を買いました。", plain:"薬局で風邪薬を買いました。", en:"pharmacy" },
+  { lesson:"16", word:"診察券", reading:"しんさつけん", romaji:"", illus:"none", emoji:"", example:"初めての病院では{診察券}を作ります。", plain:"初めての病院では診察券を作ります。", en:"hospital ID card, consultation ticket" },
+  { lesson:"16", word:"持って来る", reading:"もってくる", romaji:"", illus:"none", emoji:"", example:"次回、保険証を{持って来て}ください。", plain:"次回、保険証を持って来てください。", en:"bring" },
+  { lesson:"16", word:"食後", reading:"しょくご", romaji:"", illus:"none", emoji:"", example:"この薬は{食後}に飲んでください。", plain:"この薬は食後に飲んでください。", en:"post-meal" },
+  { lesson:"16", word:"趣味", reading:"しゅみ", romaji:"", illus:"none", emoji:"", example:"私の{趣味}は料理です。", plain:"私の趣味は料理です。", en:"hobby" },
+  { lesson:"16", word:"歯", reading:"は", romaji:"", illus:"none", emoji:"", example:"{歯}が痛いので、歯医者に行きます。", plain:"歯が痛いので、歯医者に行きます。", en:"tooth" },
+  { lesson:"16", word:"みがく", reading:"みがく", romaji:"", illus:"none", emoji:"", example:"毎食後に歯を{みがきます}。", plain:"毎食後に歯をみがきます。", en:"brush, polish" },
+  { lesson:"17", word:"販売スタッフ", reading:"はんばいスタッフ", romaji:"", illus:"none", emoji:"", example:"コンビニの{販売スタッフ}の仕事をしています。", plain:"コンビニの販売スタッフの仕事をしています。", en:"sales staff" },
+  { lesson:"17", word:"募集", reading:"ぼしゅう", romaji:"", illus:"none", emoji:"", example:"アルバイトを{募集}している店を探しています。", plain:"アルバイトを募集している店を探しています。", en:"recruitment" },
+  { lesson:"17", word:"歓迎", reading:"かんげい", romaji:"", illus:"none", emoji:"", example:"日本語ができる方は{歓迎}します。", plain:"日本語ができる方は歓迎します。", en:"a welcome, a reception" },
+  { lesson:"17", word:"選ぶ", reading:"えらぶ", romaji:"", illus:"none", emoji:"", example:"自分で仕事を{選んで}ください。", plain:"自分で仕事を選んでください。", en:"choose" },
+  { lesson:"17", word:"時給", reading:"じきゅう", romaji:"", illus:"none", emoji:"", example:"この仕事の{時給}は1200円です。", plain:"この仕事の時給は1200円です。", en:"hourly wages" },
+  { lesson:"17", word:"中国語", reading:"ちゅうごくご", romaji:"", illus:"none", emoji:"", example:"{中国語}と日本語が話せます。", plain:"中国語と日本語が話せます。", en:"Chinese language" },
+  { lesson:"17", word:"会話", reading:"かいわ", romaji:"", illus:"none", emoji:"", example:"毎日日本語の{会話}の練習をしています。", plain:"毎日日本語の会話の練習をしています。", en:"conversation" },
+  { lesson:"17", word:"教室", reading:"かいわきょうしつ", romaji:"", illus:"none", emoji:"", example:"日本語{教室}で週3回勉強しています。", plain:"日本語教室で週3回勉強しています。", en:"(conversation) school" },
+  { lesson:"17", word:"（１）ｍ", reading:"１メートル", romaji:"", illus:"none", emoji:"", example:"この棚の高さは1メートルです。", plain:"この棚の高さは1メートルです。", en:"(1) meter" },
+  { lesson:"17", word:"事務", reading:"じむ", romaji:"", illus:"none", emoji:"", example:"{事務}の仕事でパソコンを使います。", plain:"事務の仕事でパソコンを使います。", en:"office work" },
+  { lesson:"17", word:"入力（を）する", reading:"にゅうりょくをする", romaji:"", illus:"none", emoji:"", example:"データを{入力して}ください。", plain:"データを入力してください。", en:"input" },
+  { lesson:"17", word:"運転", reading:"うんてん", romaji:"", illus:"none", emoji:"", example:"父は毎日車を{運転}して会社へ行きます。", plain:"父は毎日車を運転して会社へ行きます。", en:"driving" },
+  { lesson:"17", word:"運転（を）する", reading:"うんてんをする", romaji:"", illus:"none", emoji:"", example:"バスを{運転する}仕事をしたいです。", plain:"バスを運転する仕事をしたいです。", en:"drive" },
+  { lesson:"17", word:"働く", reading:"はたらく", romaji:"", illus:"none", emoji:"", example:"週4日{働いて}います。", plain:"週4日働いています。", en:"work" },
+  { lesson:"17", word:"広告", reading:"こうこく", romaji:"", illus:"none", emoji:"", example:"駅の{広告}でこの仕事を見つけました。", plain:"駅の広告でこの仕事を見つけました。", en:"advertisement" },
+  { lesson:"17", word:"内容", reading:"ないよう", romaji:"", illus:"none", emoji:"", example:"仕事の{内容}を教えてください。", plain:"仕事の内容を教えてください。", en:"contents" },
+  { lesson:"17", word:"詳しい", reading:"くわしい", romaji:"", illus:"none", emoji:"", example:"詳しいことはホームページで説明しています。", plain:"詳しいことはホームページで説明しています。", en:"detailed" },
+  { lesson:"17", word:"知る", reading:"しる", romaji:"", illus:"none", emoji:"", example:"このお店のことはSNSで{知りました}。", plain:"このお店のことはSNSで知りました。", en:"know" },
+  { lesson:"17", word:"ロビー", reading:"ロビー", romaji:"", illus:"none", emoji:"", example:"ホテルの{ロビー}で待ち合わせをします。", plain:"ホテルのロビーで待ち合わせをします。", en:"lobby" },
+  { lesson:"17", word:"失礼", reading:"しつれい", romaji:"", illus:"none", emoji:"", example:"{失礼}ですが、お名前は何ですか。", plain:"失礼ですが、お名前は何ですか。", en:"rude, impolite" },
+  { lesson:"17", word:"平日", reading:"へいじつ", romaji:"", illus:"none", emoji:"", example:"{平日}は9時から5時まで働きます。", plain:"平日は9時から5時まで働きます。", en:"weekdays" },
+  { lesson:"17", word:"面接", reading:"めんせつ", romaji:"", illus:"none", emoji:"", example:"明日、会社の{面接}があります。", plain:"明日、会社の面接があります。", en:"interview" },
+  { lesson:"17", word:"面接（を）する", reading:"めんせつをする", romaji:"", illus:"none", emoji:"", example:"来週、アルバイトの{面接をします}。", plain:"来週、アルバイトの面接をします。", en:"have an interview" },
+  { lesson:"17", word:"失礼する", reading:"しつれいする", romaji:"", illus:"none", emoji:"", example:"それでは、{失礼します}。", plain:"それでは、失礼します。", en:"be rude, excuse oneself" },
+  { lesson:"17", word:"案内する", reading:"あんないする", romaji:"", illus:"none", emoji:"", example:"工場を{案内して}もらいました。", plain:"工場を案内してもらいました。", en:"guide" },
+  { lesson:"17", word:"休憩室", reading:"きゅうけいしつ", romaji:"", illus:"none", emoji:"", example:"{休憩室}でお昼ご飯を食べます。", plain:"休憩室でお昼ご飯を食べます。", en:"break room" },
+  { lesson:"17", word:"喫煙室", reading:"きつえんしつ", romaji:"", illus:"none", emoji:"", example:"{喫煙室}は2階にあります。", plain:"喫煙室は2階にあります。", en:"smoking room" },
+  { lesson:"18", word:"地方", reading:"かんとうちほう", romaji:"", illus:"none", emoji:"", example:"地方から東京へ引っ越してきました。", plain:"地方から東京へ引っ越してきました。", en:"(the Kanto) region" },
+  { lesson:"18", word:"天気予報", reading:"てんきよほう", romaji:"", illus:"none", emoji:"", example:"{天気予報}では明日は雨だそうです。", plain:"天気予報では明日は雨だそうです。", en:"weather forecast" },
+  { lesson:"18", word:"残念", reading:"ざんねん", romaji:"", illus:"none", emoji:"", example:"試験に合格できなくて、{残念}です。", plain:"試験に合格できなくて、残念です。", en:"regrettable, sorry" },
+  { lesson:"18", word:"誘う", reading:"さそう", romaji:"", illus:"none", emoji:"", example:"友だちを映画に{誘いました}。", plain:"友だちを映画に誘いました。", en:"invite" },
+  { lesson:"18", word:"迎えに行く", reading:"むかえにいく", romaji:"", illus:"none", emoji:"", example:"空港まで{迎えに行きます}。", plain:"空港まで迎えに行きます。", en:"go to meet, to go pick up" },
+  { lesson:"18", word:"楽しみにする", reading:"たのしみにする", romaji:"", illus:"none", emoji:"", example:"旅行を{楽しみにしています}。", plain:"旅行を楽しみにしています。", en:"look forward to" },
+  { lesson:"18", word:"用事", reading:"ようじ", romaji:"", illus:"none", emoji:"", example:"今日は{用事}があって、行けません。", plain:"今日は用事があって、行けません。", en:"errand" },
+  { lesson:"18", word:"チケット", reading:"チケット", romaji:"", illus:"none", emoji:"", example:"コンサートの{チケット}を買いました。", plain:"コンサートのチケットを買いました。", en:"ticket" },
+  { lesson:"18", word:"焼肉", reading:"やきにく", romaji:"", illus:"none", emoji:"", example:"友だちと{焼肉}を食べに行きました。", plain:"友だちと焼肉を食べに行きました。", en:"grilled meat" },
+  { lesson:"18", word:"込む", reading:"こむ", romaji:"", illus:"none", emoji:"", example:"週末はこの電車がとても{込みます}。", plain:"週末はこの電車がとても込みます。", en:"get crowded" },
+  { lesson:"18", word:"集まる", reading:"あつまる", romaji:"", illus:"none", emoji:"", example:"公園に人が{集まって}います。", plain:"公園に人が集まっています。", en:"assemble" },
+  { lesson:"18", word:"会う", reading:"あう", romaji:"", illus:"none", emoji:"", example:"久しぶりに友だちに{会いました}。", plain:"久しぶりに友だちに会いました。", en:"meet" },
+  { lesson:"18", word:"割り引き券", reading:"わりびきけん", romaji:"", illus:"none", emoji:"", example:"{割り引き券}を使って安く買いました。", plain:"割り引き券を使って安く買いました。", en:"discount ticket, coupon" },
+  { lesson:"18", word:"火事", reading:"かじ", romaji:"", illus:"none", emoji:"", example:"近くで{火事}がありました。", plain:"近くで火事がありました。", en:"a fire" },
+  { lesson:"18", word:"話", reading:"はなし", romaji:"", illus:"none", emoji:"", example:"面白い{話}を聞きました。", plain:"面白い話を聞きました。", en:"a talk" },
+  { lesson:"19", word:"試着なさる", reading:"しちゃくしちゃくなさる試着する", romaji:"", illus:"none", emoji:"", example:"こちらの服を{試着なさいます}か。", plain:"こちらの服を試着なさいますか。", en:"try on" },
+  { lesson:"19", word:"ズボンをはく", reading:"ズボンをはく", romaji:"", illus:"none", emoji:"", example:"今日は黒い{ズボンをはいて}います。", plain:"今日は黒いズボンをはいています。", en:"put on (pants)" },
+  { lesson:"19", word:"見つかる", reading:"みつかる", romaji:"", illus:"none", emoji:"", example:"探していた本が{見つかりました}。", plain:"探していた本が見つかりました。", en:"find" },
+  { lesson:"19", word:"放送する", reading:"ほうそうする", romaji:"", illus:"none", emoji:"", example:"駅で迷子の{放送をしています}。", plain:"駅で迷子の放送をしています。", en:"broadcast" },
+  { lesson:"19", word:"着る", reading:"きる", romaji:"", illus:"none", emoji:"", example:"今日は白いシャツを{着て}います。", plain:"今日は白いシャツを着ています。", en:"put on, wear (clothing)" },
+  { lesson:"19", word:"紺", reading:"こん", romaji:"", illus:"none", emoji:"", example:"{紺}のズボンをはいた男の子です。", plain:"紺のズボンをはいた男の子です。", en:"dark blue" },
+  { lesson:"19", word:"半ズボン", reading:"はんズボン", romaji:"", illus:"none", emoji:"", example:"夏は{半ズボン}をはいています。", plain:"夏は半ズボンをはいています。", en:"shorts" },
+  { lesson:"19", word:"かぶる", reading:"かぶる", romaji:"", illus:"none", emoji:"", example:"帽子を{かぶって}外出しました。", plain:"帽子をかぶって外出しました。", en:"put on, wear (a hat)" },
+  { lesson:"19", word:"男", reading:"おとこ", romaji:"", illus:"none", emoji:"", example:"あの{男}の人はだれですか。", plain:"あの男の人はだれですか。", en:"man" },
+  { lesson:"19", word:"迷子", reading:"まいご", romaji:"", illus:"none", emoji:"", example:"子どもが{迷子}になってしまいました。", plain:"子どもが迷子になってしまいました。", en:"lost child" },
+  { lesson:"19", word:"見かける", reading:"みかける", romaji:"", illus:"none", emoji:"", example:"駅で先生を{見かけました}。", plain:"駅で先生を見かけました。", en:"see, catch sight of" },
+  { lesson:"19", word:"売場", reading:"うりば", romaji:"", illus:"none", emoji:"", example:"おもちゃ{売場}は3階にあります。", plain:"おもちゃ売場は3階にあります。", en:"counter, shop,department" },
+  { lesson:"19", word:"預かる", reading:"あずかる", romaji:"", illus:"none", emoji:"", example:"荷物を{預かって}もらえますか。", plain:"荷物を預かってもらえますか。", en:"keep, look after" },
+  { lesson:"19", word:"迎えに来る", reading:"むかえにくる", romaji:"", illus:"none", emoji:"", example:"父が空港に{迎えに来て}くれました。", plain:"父が空港に迎えに来てくれました。", en:"come to meet, come pick up" },
+  { lesson:"19", word:"曲がる", reading:"まがる", romaji:"", illus:"none", emoji:"", example:"角を右に{曲がって}ください。", plain:"角を右に曲がってください。", en:"be bent, turn" },
+  { lesson:"19", word:"左側", reading:"ひだりがわ", romaji:"", illus:"none", emoji:"", example:"駅を出ると、{左側}にコンビニがあります。", plain:"駅を出ると、左側にコンビニがあります。", en:"left side" },
+  { lesson:"19", word:"突き当たり", reading:"つきあたり", romaji:"", illus:"none", emoji:"", example:"{突き当たり}を右に曲がってください。", plain:"突き当たりを右に曲がってください。", en:"the end" },
+  { lesson:"20", word:"経営学", reading:"けいえいがく", romaji:"", illus:"none", emoji:"", example:"{経営学}を勉強して、会社を作りたいです。", plain:"経営学を勉強して、会社を作りたいです。", en:"(the study of) business management" },
+  { lesson:"20", word:"受ける", reading:"うける", romaji:"", illus:"none", emoji:"", example:"来月、日本語の試験を{受けます}。", plain:"来月、日本語の試験を受けます。", en:"receive" },
+  { lesson:"20", word:"試験", reading:"しけん", romaji:"", illus:"none", emoji:"", example:"来週、大切な{試験}があります。", plain:"来週、大切な試験があります。", en:"exam,test" },
+  { lesson:"20", word:"受験勉強", reading:"じゅけんべんきょう", romaji:"", illus:"none", emoji:"", example:"{受験勉強}のために毎日図書館で勉強しています。", plain:"受験勉強のために毎日図書館で勉強しています。", en:"study for an exam" },
+  { lesson:"20", word:"進む", reading:"べんきょうすすむ", romaji:"", illus:"none", emoji:"", example:"日本語の勉強が{進んで}きました。", plain:"日本語の勉強が進んできました。", en:"move forward (studies)" },
+  { lesson:"20", word:"自信がある", reading:"じしんある", romaji:"", illus:"none", emoji:"", example:"この試験には{自信があります}。", plain:"この試験には自信があります。", en:"have (confidence)" },
+  { lesson:"20", word:"練習", reading:"れんしゅう", romaji:"", illus:"none", emoji:"", example:"毎日スピーチの{練習}をしています。", plain:"毎日スピーチの練習をしています。", en:"practice" },
+  { lesson:"20", word:"がんばる", reading:"がんばる", romaji:"", illus:"none", emoji:"", example:"試験に合格するために{がんばります}。", plain:"試験に合格するためにがんばります。", en:"work hard" },
+  { lesson:"20", word:"観光", reading:"かんこう", romaji:"", illus:"none", emoji:"", example:"京都に{観光}に行きました。", plain:"京都に観光に行きました。", en:"tourism" },
+  { lesson:"20", word:"迷う", reading:"まよう", romaji:"", illus:"none", emoji:"", example:"どの学校にするか{迷って}います。", plain:"どの学校にするか迷っています。", en:"get lost" },
+  { lesson:"20", word:"オープンキャンパス", reading:"オープンキャンパス", romaji:"", illus:"none", emoji:"", example:"{オープンキャンパス}で学校の説明を聞きました。", plain:"オープンキャンパスで学校の説明を聞きました。", en:"open campus" },
+  { lesson:"20", word:"募集要項", reading:"ぼしゅうようこう", romaji:"", illus:"none", emoji:"", example:"{募集要項}を読んで、応募しました。", plain:"募集要項を読んで、応募しました。", en:"guidelines for applicants" },
+  { lesson:"20", word:"もらって来る", reading:"もらってくる", romaji:"", illus:"none", emoji:"", example:"学校のパンフレットを{もらって来ました}。", plain:"学校のパンフレットをもらって来ました。", en:"go get" },
+  { lesson:"20", word:"進学説明会", reading:"しんがくせつめいかい", romaji:"", illus:"none", emoji:"", example:"{進学説明会}に参加して、大学について調べました。", plain:"進学説明会に参加して、大学について調べました。", en:"explanatory meeting for university-bound" },
+  { lesson:"20", word:"直接", reading:"ちょくせつ", romaji:"", illus:"none", emoji:"", example:"先生に{直接}聞きに行きました。", plain:"先生に直接聞きに行きました。", en:"direct" },
+  { lesson:"20", word:"受験", reading:"じゅけん", romaji:"", illus:"none", emoji:"", example:"大学{受験}のために毎日勉強しています。", plain:"大学受験のために毎日勉強しています。", en:"taking an exam" },
+  { lesson:"20", word:"通う", reading:"かよう", romaji:"", illus:"none", emoji:"", example:"毎日電車で学校に{通っています}。", plain:"毎日電車で学校に通っています。", en:"commute" },
+  { lesson:"20", word:"問題", reading:"しけんもんだい", romaji:"", illus:"none", emoji:"", example:"試験の{問題}が難しかったです。", plain:"試験の問題が難しかったです。", en:"question (on an exam)" },
+  { lesson:"20", word:"出る", reading:"もんだいでる", romaji:"", illus:"none", emoji:"", example:"試験に難しい問題が{出ました}。", plain:"試験に難しい問題が出ました。", en:"(a question) to come up" },
+  { lesson:"21", word:"（お）世話になる", reading:"おせわになる", romaji:"", illus:"none", emoji:"", example:"先生には大変{お世話になりました}。", plain:"先生には大変お世話になりました。", en:"appreciate someone's service / hospitality" },
+  { lesson:"21", word:"玄関", reading:"げんかん", romaji:"", illus:"none", emoji:"", example:"{玄関}で靴を脱いでください。", plain:"玄関で靴を脱いでください。", en:"front entrance" },
+  { lesson:"21", word:"スリッパ", reading:"スリッパ", romaji:"", illus:"emoji", emoji:"🩴", example:"家の中では{スリッパ}をはきます。", plain:"家の中ではスリッパをはきます。", en:"slippers" },
+  { lesson:"21", word:"上がる", reading:"うちにあがる", romaji:"", illus:"none", emoji:"", example:"どうぞ、{上がって}ください。", plain:"どうぞ、上がってください。", en:"go (inside)" },
+  { lesson:"21", word:"そろえる", reading:"そろえる", romaji:"", illus:"none", emoji:"", example:"靴を{そろえて}から家に入ります。", plain:"靴をそろえてから家に入ります。", en:"prepare, arrange" },
+  { lesson:"21", word:"和室", reading:"わしつ", romaji:"", illus:"none", emoji:"", example:"{和室}に布団を敷いて寝ます。", plain:"和室に布団を敷いて寝ます。", en:"Japanese-style room" },
+  { lesson:"21", word:"手伝い（を）する", reading:"てつだいをする", romaji:"", illus:"none", emoji:"", example:"料理の{手伝いをして}もらえますか。", plain:"料理の手伝いをしてもらえますか。", en:"help" },
+  { lesson:"21", word:"積極的", reading:"せっきょくてき", romaji:"", illus:"none", emoji:"", example:"{積極的}に質問してください。", plain:"積極的に質問してください。", en:"active, positive" },
+  { lesson:"21", word:"無理", reading:"たむりに食べる", romaji:"", illus:"none", emoji:"", example:"体に{無理}をしないでください。", plain:"体に無理をしないでください。", en:"force (oneself to eat)" },
+  { lesson:"21", word:"（お）湯", reading:"おゆ", romaji:"", illus:"none", emoji:"", example:"{お湯}が沸きましたよ。", plain:"お湯が沸きましたよ。", en:"hot water" },
+  { lesson:"21", word:"洗う", reading:"あらう", romaji:"", illus:"none", emoji:"", example:"食事の前に手を{洗います}。", plain:"食事の前に手を洗います。", en:"wash" },
+  { lesson:"21", word:"出る", reading:"ふろお風呂をでる", romaji:"", illus:"none", emoji:"", example:"試験に難しい問題が{出ました}。", plain:"試験に難しい問題が出ました。", en:"get out (of the bathtub / bathroom)" },
+  { lesson:"21", word:"まどをふく", reading:"まどをふく", romaji:"", illus:"none", emoji:"", example:"{まどをふいて}、きれいにします。", plain:"まどをふいて、きれいにします。", en:"dry, wipe" },
+  { lesson:"21", word:"思い出", reading:"おもいで", romaji:"", illus:"none", emoji:"", example:"友だちとの{思い出}を大切にしています。", plain:"友だちとの思い出を大切にしています。", en:"a memory" },
+  { lesson:"21", word:"お礼", reading:"おれい", romaji:"", illus:"none", emoji:"", example:"先生にお土産を持って{お礼}に行きました。", plain:"先生にお土産を持ってお礼に行きました。", en:"gratitude" },
+  { lesson:"21", word:"就職説明会", reading:"しゅうしょくせつめいかい", romaji:"", illus:"none", emoji:"", example:"{就職説明会}に参加して、会社のことを調べました。", plain:"就職説明会に参加して、会社のことを調べました。", en:"job fair" },
+  { lesson:"21", word:"願書", reading:"がんしょ", romaji:"", illus:"none", emoji:"", example:"大学の{願書}を書きました。", plain:"大学の願書を書きました。", en:"application form" },
+  { lesson:"21", word:"払う", reading:"はらう", romaji:"", illus:"none", emoji:"", example:"家賃を毎月{払います}。", plain:"家賃を毎月払います。", en:"pay" },
+  { lesson:"21", word:"召し上がる", reading:"めしあがる食べる", romaji:"", illus:"none", emoji:"", example:"どうぞ、{召し上がって}ください。", plain:"どうぞ、召し上がってください。", en:"eat" },
+  { lesson:"21", word:"息子", reading:"むすこ", romaji:"", illus:"none", emoji:"", example:"{息子}は今年、大学に入りました。", plain:"息子は今年、大学に入りました。", en:"son" },
+  { lesson:"21", word:"運ぶ", reading:"はこぶ", romaji:"", illus:"none", emoji:"", example:"重い荷物を2階まで{運びました}。", plain:"重い荷物を2階まで運びました。", en:"carry" },
+  { lesson:"21", word:"苦手", reading:"にがて", romaji:"", illus:"none", emoji:"", example:"私は辛い食べ物が{苦手}です。", plain:"私は辛い食べ物が苦手です。", en:"be weak in" },
+  { lesson:"21", word:"食事中", reading:"しょくじちゅう", romaji:"", illus:"none", emoji:"", example:"{食事中}に電話が来ました。", plain:"食事中に電話が来ました。", en:"during a meal" },
+  { lesson:"21", word:"用意", reading:"ようい", romaji:"", illus:"none", emoji:"", example:"明日の旅行の{用意}をしています。", plain:"明日の旅行の用意をしています。", en:"preparations" },
+  { lesson:"21", word:"におい", reading:"におい", romaji:"", illus:"none", emoji:"", example:"この花はいい{におい}がします。", plain:"この花はいいにおいがします。", en:"smell" },
+  { lesson:"21", word:"トマト", reading:"トマト", romaji:"", illus:"emoji", emoji:"🍅", example:"{トマト}はサラダに入れます。", plain:"トマトはサラダに入れます。", en:"tomato" },
+  { lesson:"21", word:"きゅうり", reading:"きゅうり", romaji:"", illus:"emoji", emoji:"🥒", example:"{きゅうり}を薄く切りました。", plain:"きゅうりを薄く切りました。", en:"cucumber" },
+  { lesson:"21", word:"作る", reading:"トマトをつくる", romaji:"", illus:"none", emoji:"", example:"毎朝自分で弁当を{作ります}。", plain:"毎朝自分で弁当を作ります。", en:"grow (tomatoes)" },
+  { lesson:"21", word:"味", reading:"あじ", romaji:"", illus:"none", emoji:"", example:"このスープは{味}がとてもいいです。", plain:"このスープは味がとてもいいです。", en:"taste" },
+  { lesson:"21", word:"野菜作り", reading:"やさいづくり", romaji:"", illus:"none", emoji:"", example:"庭で{野菜作り}をしています。", plain:"庭で野菜作りをしています。", en:"vegetable growing" },
+  { lesson:"21", word:"泊まる", reading:"ホテルにとまる", romaji:"", illus:"none", emoji:"", example:"友だちの家に{泊まりました}。", plain:"友だちの家に泊まりました。", en:"stay (at a hotel)" },
+  { lesson:"21", word:"お宅", reading:"おたく", romaji:"", illus:"none", emoji:"", example:"先生の{お宅}に遊びに行きました。", plain:"先生のお宅に遊びに行きました。", en:"your home" },
+  { lesson:"22", word:"涼しい", reading:"すずしい", romaji:"", illus:"none", emoji:"", example:"秋になって、{涼しく}なりました。", plain:"秋になって、涼しくなりました。", en:"cool" },
+  { lesson:"22", word:"ほしい", reading:"ほしい", romaji:"", illus:"none", emoji:"", example:"新しい自転車が{ほしい}です。", plain:"新しい自転車がほしいです。", en:"want" },
+  { lesson:"22", word:"似合う", reading:"にあう", romaji:"", illus:"none", emoji:"", example:"その服、とても{似合って}いますね。", plain:"その服、とても似合っていますね。", en:"suit, match" },
+  { lesson:"22", word:"あげる", reading:"あげる", romaji:"", illus:"none", emoji:"", example:"友だちに誕生日プレゼントを{あげました}。", plain:"友だちに誕生日プレゼントをあげました。", en:"give" },
+  { lesson:"22", word:"重い", reading:"おもい", romaji:"", illus:"none", emoji:"", example:"この荷物は{重い}ので、持ちにくいです。", plain:"この荷物は重いので、持ちにくいです。", en:"heavy" },
+  { lesson:"22", word:"クッキー", reading:"クッキー", romaji:"", illus:"none", emoji:"", example:"手作りの{クッキー}をもらいました。", plain:"手作りのクッキーをもらいました。", en:"cookie" },
+  { lesson:"22", word:"暖かい", reading:"あたたかい", romaji:"", illus:"none", emoji:"", example:"今日は{暖かい}ので、コートはいりません。", plain:"今日は暖かいので、コートはいりません。", en:"warm (temperature, weather)" },
+  { lesson:"22", word:"ボタンが取れる", reading:"ボタンがとれる", romaji:"", illus:"none", emoji:"", example:"シャツの{ボタンが取れました}。", plain:"シャツのボタンが取れました。", en:"a button (comes off)" },
+  { lesson:"22", word:"頭痛薬", reading:"ずつうやく", romaji:"", illus:"none", emoji:"", example:"頭が痛いので、{頭痛薬}を飲みました。", plain:"頭が痛いので、頭痛薬を飲みました。", en:"headache medicine" },
+  { lesson:"22", word:"強い", reading:"くすりつよい", romaji:"", illus:"none", emoji:"", example:"この薬は{強い}ので、注意してください。", plain:"この薬は強いので、注意してください。", en:"strong (medicine)" },
+  { lesson:"22", word:"眠い", reading:"ねむい", romaji:"", illus:"none", emoji:"", example:"昨夜、あまり寝られなくて{眠い}です。", plain:"昨夜、あまり寝られなくて眠いです。", en:"sleepy" },
+  { lesson:"22", word:"折りたたみ", reading:"おりたたみ", romaji:"", illus:"none", emoji:"", example:"{折りたたみ}傘をかばんに入れています。", plain:"折りたたみ傘をかばんに入れています。", en:"folding" },
+  { lesson:"22", word:"目", reading:"め", romaji:"", illus:"none", emoji:"", example:"{目}が痛いので、病院に行きます。", plain:"目が痛いので、病院に行きます。", en:"eye" },
+  { lesson:"22", word:"悪い", reading:"めわるい", romaji:"", illus:"none", emoji:"", example:"目が{悪い}ので、眼鏡をかけています。", plain:"目が悪いので、眼鏡をかけています。", en:"have poor (eyesight)" },
+  { lesson:"22", word:"家具", reading:"かぐ", romaji:"", illus:"none", emoji:"", example:"引っ越して、新しい{家具}を買いました。", plain:"引っ越して、新しい家具を買いました。", en:"furniture" },
+  { lesson:"22", word:"増える", reading:"ふえる", romaji:"", illus:"none", emoji:"", example:"最近、外国人が{増えて}います。", plain:"最近、外国人が増えています。", en:"increase" },
+  { lesson:"22", word:"招待券", reading:"しょうたいけん", romaji:"", illus:"none", emoji:"", example:"コンサートの{招待券}をもらいました。", plain:"コンサートの招待券をもらいました。", en:"invitation ticket" },
+  { lesson:"22", word:"大切", reading:"たいせつ", romaji:"", illus:"none", emoji:"", example:"友だちを{大切}にしてください。", plain:"友だちを大切にしてください。", en:"important" },
+  { lesson:"22", word:"習いたがる", reading:"ならいたがる", romaji:"", illus:"none", emoji:"", example:"弟は英語を{習いたがって}います。", plain:"弟は英語を習いたがっています。", en:"be eager (to learn)" },
+  { lesson:"22", word:"ほしがる", reading:"ほしがる", romaji:"", illus:"none", emoji:"", example:"子どもがおもちゃを{ほしがって}います。", plain:"子どもがおもちゃをほしがっています。", en:"want" },
+  { lesson:"23", word:"電子書籍", reading:"でんししょせき", romaji:"", illus:"none", emoji:"", example:"{電子書籍}をスマホで読んでいます。", plain:"電子書籍をスマホで読んでいます。", en:"e-book" },
+  { lesson:"23", word:"そのころ", reading:"そのころ", romaji:"", illus:"none", emoji:"", example:"{そのころ}は毎日学校が楽しかったです。", plain:"そのころは毎日学校が楽しかったです。", en:"that time, those days" },
+  { lesson:"23", word:"売れる", reading:"うれる", romaji:"", illus:"none", emoji:"", example:"この本はたくさん{売れて}います。", plain:"この本はたくさん売れています。", en:"sell well" },
+  { lesson:"23", word:"しかし", reading:"しかし", romaji:"", illus:"none", emoji:"", example:"値段は高いです。{しかし}、品質がいいです。", plain:"値段は高いです。しかし、品質がいいです。", en:"however" },
+  { lesson:"23", word:"普及する", reading:"ふきゅうする", romaji:"", illus:"none", emoji:"", example:"スマートフォンが{普及して}、生活が便利になりました。", plain:"スマートフォンが普及して、生活が便利になりました。", en:"spread, propagate" },
+  { lesson:"23", word:"メリット", reading:"メリット", romaji:"", illus:"none", emoji:"", example:"この方法の{メリット}を教えてください。", plain:"この方法のメリットを教えてください。", en:"an advantage, a merit" },
+  { lesson:"23", word:"保存する", reading:"ほぞんする", romaji:"", illus:"none", emoji:"", example:"大切な写真をパソコンに{保存します}。", plain:"大切な写真をパソコンに保存します。", en:"preserve, save" },
+  { lesson:"23", word:"持ち運ぶ", reading:"もちはこぶ", romaji:"", illus:"none", emoji:"", example:"スマホは{持ち運べる}ので便利です。", plain:"スマホは持ち運べるので便利です。", en:"carry" },
+  { lesson:"23", word:"利用する", reading:"りようする", romaji:"", illus:"none", emoji:"", example:"図書館をよく{利用しています}。", plain:"図書館をよく利用しています。", en:"use" },
+  { lesson:"23", word:"考える", reading:"かんがえる", romaji:"", illus:"none", emoji:"", example:"この問題についてよく{考えました}。", plain:"この問題についてよく考えました。", en:"think" },
+  { lesson:"23", word:"並べる", reading:"ならべる", romaji:"", illus:"none", emoji:"", example:"本を棚に{並べました}。", plain:"本を棚に並べました。", en:"display,arrange, line up" },
+  { lesson:"23", word:"楽しむ", reading:"たのしむ", romaji:"", illus:"none", emoji:"", example:"音楽を{楽しんで}います。", plain:"音楽を楽しんでいます。", en:"enjoy" },
+  { lesson:"23", word:"街", reading:"まち", romaji:"", illus:"none", emoji:"", example:"この{街}はとても活気があります。", plain:"この街はとても活気があります。", en:"town,district" },
+  { lesson:"23", word:"減る", reading:"へる", romaji:"", illus:"none", emoji:"", example:"最近、本屋の数が{減って}います。", plain:"最近、本屋の数が減っています。", en:"decrease" },
+  { lesson:"23", word:"最近", reading:"さいきん", romaji:"", illus:"none", emoji:"", example:"{最近}、日本語が上手になってきました。", plain:"最近、日本語が上手になってきました。", en:"recently" },
+  { lesson:"23", word:"数", reading:"かず", romaji:"", illus:"none", emoji:"", example:"参加者の{数}を数えてください。", plain:"参加者の数を数えてください。", en:"number" },
+  { lesson:"23", word:"伺う", reading:"きうかがう聞く", romaji:"", illus:"none", emoji:"", example:"先生に話を{伺いに}行きました。", plain:"先生に話を伺いに行きました。", en:"hear, be told" },
+  { lesson:"23", word:"偶然", reading:"ぐうぜん", romaji:"", illus:"none", emoji:"", example:"駅で{偶然}、友だちに会いました。", plain:"駅で偶然、友だちに会いました。", en:"ｂｙ chance, coincidence" },
+  { lesson:"24", word:"くれる", reading:"くれる", romaji:"", illus:"none", emoji:"", example:"友だちがお土産を{くれました}。", plain:"友だちがお土産をくれました。", en:"give" },
+  { lesson:"24", word:"あと二人", reading:"ふたりあと", romaji:"", illus:"none", emoji:"", example:"{あと二人}来たら、始めましょう。", plain:"あと二人来たら、始めましょう。", en:"(two) more (people)" },
+  { lesson:"24", word:"遊園地", reading:"ゆうえんち", romaji:"", illus:"emoji", emoji:"🎡", example:"子どもと{遊園地}に行きました。", plain:"子どもと遊園地に行きました。", en:"amusement park" },
+  { lesson:"24", word:"数学", reading:"すうがく", romaji:"", illus:"none", emoji:"", example:"{数学}の問題が難しくてわかりません。", plain:"数学の問題が難しくてわかりません。", en:"mathematics" },
+  { lesson:"24", word:"まあまあ", reading:"まあまあ", romaji:"", illus:"none", emoji:"", example:"試験の結果は{まあまあ}でした。", plain:"試験の結果はまあまあでした。", en:"so-so, decent" },
+  { lesson:"24", word:"医務室", reading:"いむしつ", romaji:"", illus:"none", emoji:"", example:"気分が悪いので、{医務室}に行きます。", plain:"気分が悪いので、医務室に行きます。", en:"nurse's office,infirmary" },
+  { lesson:"24", word:"おろす", reading:"おろす", romaji:"", illus:"none", emoji:"", example:"銀行でお金を{おろしました}。", plain:"銀行でお金をおろしました。", en:"grate withdraw (money),let off," },
+  { lesson:"24", word:"所", reading:"せんせいところ", romaji:"", illus:"none", emoji:"", example:"先生の{ところ}へ質問しに行きます。", plain:"先生のところへ質問しに行きます。", en:"(teacher's) place" },
+  { lesson:"24", word:"定規", reading:"じょうぎ", romaji:"", illus:"emoji", emoji:"📏", example:"線を引くとき、{定規}を使います。", plain:"線を引くとき、定規を使います。", en:"ruler" },
+  { lesson:"24", word:"壊れる", reading:"こわれる", romaji:"", illus:"none", emoji:"", example:"パソコンが{壊れて}、使えなくなりました。", plain:"パソコンが壊れて、使えなくなりました。", en:"break" },
+  { lesson:"24", word:"虫歯", reading:"むしば", romaji:"", illus:"none", emoji:"", example:"{虫歯}ができたので、歯医者に行きます。", plain:"虫歯ができたので、歯医者に行きます。", en:"cavity" },
+  { lesson:"24", word:"困る", reading:"こまる", romaji:"", illus:"none", emoji:"", example:"道がわからなくて{困って}います。", plain:"道がわからなくて困っています。", en:"have trouble" },
+  { lesson:"24", word:"あんまり", reading:"あんまり", romaji:"", illus:"none", emoji:"", example:"{あんまり}辛くない料理が好きです。", plain:"あんまり辛くない料理が好きです。", en:"not much, not often" },
+  { lesson:"24", word:"クーポン券", reading:"クーポンけん", romaji:"", illus:"none", emoji:"", example:"{クーポン券}を使って安く買えました。", plain:"クーポン券を使って安く買えました。", en:"coupon" },
+  { lesson:"24", word:"約束", reading:"やくそく", romaji:"", illus:"none", emoji:"", example:"友だちと6時に会う{約束}をしました。", plain:"友だちと6時に会う約束をしました。", en:"promise" },
+  { lesson:"25", word:"開く", reading:"あく", romaji:"", illus:"none", emoji:"", example:"ドアが{開いて}います。", plain:"ドアが開いています。", en:"open" },
+  { lesson:"25", word:"閉まる", reading:"しまる", romaji:"", illus:"none", emoji:"", example:"店は9時に{閉まります}。", plain:"店は9時に閉まります。", en:"close" },
+  { lesson:"25", word:"糸", reading:"いと", romaji:"", illus:"emoji", emoji:"🧵", example:"針に{糸}を通します。", plain:"針に糸を通します。", en:"thread" },
+  { lesson:"25", word:"切れる", reading:"きれる", romaji:"", illus:"none", emoji:"", example:"糸が{切れて}しまいました。", plain:"糸が切れてしまいました。", en:"break off, run out" },
+  { lesson:"25", word:"出る", reading:"ジュースがでる", romaji:"", illus:"none", emoji:"", example:"試験に難しい問題が{出ました}。", plain:"試験に難しい問題が出ました。", en:"come out (juice)" },
+  { lesson:"25", word:"出す", reading:"ジュースをだす", romaji:"", illus:"none", emoji:"", example:"先生が薬を{出して}くれました。", plain:"先生が薬を出してくれました。", en:"put out (juice)" },
+  { lesson:"25", word:"回る", reading:"まわる", romaji:"", illus:"none", emoji:"", example:"地球は太陽の周りを{回って}います。", plain:"地球は太陽の周りを回っています。", en:"spin" },
+  { lesson:"25", word:"ハンドル", reading:"ハンドル", romaji:"", illus:"none", emoji:"", example:"車の{ハンドル}を右に回してください。", plain:"車のハンドルを右に回してください。", en:"steering wheel, handle" },
+  { lesson:"25", word:"回す", reading:"まわす", romaji:"", illus:"none", emoji:"", example:"ふたを{回して}開けてください。", plain:"ふたを回して開けてください。", en:"spin (something)" },
+  { lesson:"25", word:"落とす", reading:"りんごをおとす", romaji:"", illus:"none", emoji:"", example:"スマホを{落として}しまいました。", plain:"スマホを落としてしまいました。", en:"drop (an apple)" },
+  { lesson:"25", word:"倒れる", reading:"たおれる", romaji:"", illus:"none", emoji:"", example:"地震で棚が{倒れました}。", plain:"地震で棚が倒れました。", en:"fall down" },
+  { lesson:"25", word:"倒す", reading:"たおす", romaji:"", illus:"none", emoji:"", example:"重いものを{倒さない}ように気をつけます。", plain:"重いものを倒さないように気をつけます。", en:"knock down,topple" },
+  { lesson:"25", word:"人形", reading:"にんぎょう", romaji:"", illus:"emoji", emoji:"🪆", example:"子どもに{人形}のおもちゃを買いました。", plain:"子どもに人形のおもちゃを買いました。", en:"doll" },
+  { lesson:"25", word:"動く", reading:"うごく", romaji:"", illus:"none", emoji:"", example:"このロボットは自動で{動きます}。", plain:"このロボットは自動で動きます。", en:"move" },
+  { lesson:"25", word:"動かす", reading:"うごかす", romaji:"", illus:"none", emoji:"", example:"重い荷物を{動かして}ください。", plain:"重い荷物を動かしてください。", en:"move (something)" },
+  { lesson:"25", word:"止まる", reading:"みずとまる", romaji:"", illus:"none", emoji:"", example:"信号が赤になったので、車が{止まりました}。", plain:"信号が赤になったので、車が止まりました。", en:"stop running (i.e., water)" },
+  { lesson:"25", word:"割れる", reading:"われる", romaji:"", illus:"none", emoji:"", example:"コップを落として{割れました}。", plain:"コップを落として割れました。", en:"be broken" },
+  { lesson:"25", word:"汚れる", reading:"よごれる", romaji:"", illus:"none", emoji:"", example:"白い服が{汚れて}しまいました。", plain:"白い服が汚れてしまいました。", en:"get dirty" },
+  { lesson:"25", word:"でんき（電気が）つく", reading:"でんきつく", romaji:"", illus:"none", emoji:"", example:"{でんき（電気が）つく}を使います。", plain:"でんき（電気が）つくを使います。", en:"come on (lights)" },
+  { lesson:"25", word:"でんき（電気を）つける", reading:"でんきつける", romaji:"", illus:"none", emoji:"", example:"{でんき（電気を）つける}を使います。", plain:"でんき（電気を）つけるを使います。", en:"turn on (the lights)" },
+  { lesson:"25", word:"消える", reading:"きえる", romaji:"", illus:"none", emoji:"", example:"急に電気が{消えました}。", plain:"急に電気が消えました。", en:"go out,disappear" },
+  { lesson:"25", word:"消す", reading:"けす", romaji:"", illus:"none", emoji:"", example:"寝る前に電気を{消します}。", plain:"寝る前に電気を消します。", en:"turn off,erase" },
+  { lesson:"25", word:"壊す", reading:"こわす", romaji:"", illus:"none", emoji:"", example:"大切なものを{壊さない}でください。", plain:"大切なものを壊さないでください。", en:"break (something)" },
+  { lesson:"25", word:"起こす", reading:"おこす", romaji:"", illus:"none", emoji:"", example:"明日、7時に{起こして}ください。", plain:"明日、7時に起こしてください。", en:"wake (someone) up" },
+  { lesson:"25", word:"赤ちゃん", reading:"あかちゃん", romaji:"", illus:"none", emoji:"", example:"{赤ちゃん}が生まれました。", plain:"赤ちゃんが生まれました。", en:"baby" },
+  { lesson:"25", word:"入れる", reading:"ふろお風呂にいれる", romaji:"", illus:"none", emoji:"", example:"かばんに教科書を{入れて}ください。", plain:"かばんに教科書を入れてください。", en:"put (someone a bath)" },
+  { lesson:"25", word:"乗せる", reading:"くるまのせる", romaji:"", illus:"none", emoji:"", example:"子どもを車に{乗せて}出かけました。", plain:"子どもを車に乗せて出かけました。", en:"give a ride" },
+  { lesson:"26", word:"壁", reading:"かべ", romaji:"", illus:"none", emoji:"", example:"{壁}に絵を飾りました。", plain:"壁に絵を飾りました。", en:"wall" },
+  { lesson:"26", word:"南向き", reading:"みなみむき", romaji:"", illus:"none", emoji:"", example:"この部屋は{南向き}で、日当たりがいいです。", plain:"この部屋は南向きで、日当たりがいいです。", en:"south facing" },
+  { lesson:"26", word:"事務所", reading:"じむしょ", romaji:"", illus:"none", emoji:"", example:"会社の{事務所}で仕事をしています。", plain:"会社の事務所で仕事をしています。", en:"office" },
+  { lesson:"26", word:"戻る", reading:"もどる", romaji:"", illus:"none", emoji:"", example:"忘れ物をしたので、家に{戻りました}。", plain:"忘れ物をしたので、家に戻りました。", en:"return" },
+  { lesson:"26", word:"窓ガラス", reading:"まどガラス", romaji:"", illus:"none", emoji:"", example:"{窓ガラス}が汚れているので、拭きます。", plain:"窓ガラスが汚れているので、拭きます。", en:"window glass" },
+  { lesson:"26", word:"危ない", reading:"あぶない", romaji:"", illus:"none", emoji:"", example:"子どもが{危ない}ところで遊んでいます。", plain:"子どもが危ないところで遊んでいます。", en:"dangerous" },
+  { lesson:"26", word:"ハンカチ", reading:"ハンカチ", romaji:"", illus:"none", emoji:"", example:"ポケットに{ハンカチ}を入れています。", plain:"ポケットにハンカチを入れています。", en:"handkerchief" },
+  { lesson:"26", word:"ぬれる", reading:"ぬれる", romaji:"", illus:"none", emoji:"", example:"雨で服が{ぬれて}しまいました。", plain:"雨で服がぬれてしまいました。", en:"get wet" },
+  { lesson:"26", word:"気をつける", reading:"きをつける", romaji:"", illus:"none", emoji:"", example:"道を渡るとき、{気をつけて}ください。", plain:"道を渡るとき、気をつけてください。", en:"be careful" },
+  { lesson:"26", word:"床", reading:"ゆか", romaji:"", illus:"none", emoji:"", example:"{床}が濡れているので、滑らないように。", plain:"床が濡れているので、滑らないように。", en:"floor" },
+  { lesson:"26", word:"ガラス", reading:"ガラス", romaji:"", illus:"none", emoji:"", example:"{ガラス}のコップは割れやすいです。", plain:"ガラスのコップは割れやすいです。", en:"glass" },
+  { lesson:"26", word:"引っ越し", reading:"ひっこし", romaji:"", illus:"none", emoji:"", example:"来月、{引っ越し}をします。", plain:"来月、引っ越しをします。", en:"moving (from home to home)" },
+  { lesson:"26", word:"ガス", reading:"ガス", romaji:"", illus:"none", emoji:"", example:"{ガス}会社に連絡して、開通させます。", plain:"ガス会社に連絡して、開通させます。", en:"gas" },
+  { lesson:"26", word:"水道", reading:"すいどう", romaji:"", illus:"none", emoji:"", example:"{水道}の手続きをしました。", plain:"水道の手続きをしました。", en:"waterworks" },
+  { lesson:"26", word:"連絡", reading:"れんらく", romaji:"", illus:"none", emoji:"", example:"何かあったら、すぐに{連絡}してください。", plain:"何かあったら、すぐに連絡してください。", en:"contact, communication" },
+  { lesson:"26", word:"役所", reading:"やくしょ", romaji:"", illus:"emoji", emoji:"🏛️", example:"{役所}で住所変更の手続きをしました。", plain:"役所で住所変更の手続きをしました。", en:"public / government office" },
+  { lesson:"26", word:"電気製品", reading:"でんきせいひん", romaji:"", illus:"none", emoji:"", example:"引っ越しのとき、{電気製品}を運ぶのが大変です。", plain:"引っ越しのとき、電気製品を運ぶのが大変です。", en:"electronic products" },
+  { lesson:"26", word:"地域", reading:"ちいき", romaji:"", illus:"none", emoji:"", example:"この{地域}は静かで住みやすいです。", plain:"この地域は静かで住みやすいです。", en:"region" },
+  { lesson:"26", word:"ルール", reading:"ルール", romaji:"", illus:"none", emoji:"", example:"マンションの{ルール}を守ってください。", plain:"マンションのルールを守ってください。", en:"rule" },
+  { lesson:"26", word:"守る", reading:"まもる", romaji:"", illus:"none", emoji:"", example:"約束を{守る}ことが大切です。", plain:"約束を守ることが大切です。", en:"obey,observe, protect" },
+  { lesson:"26", word:"位置", reading:"いち", romaji:"", illus:"none", emoji:"", example:"家具の{位置}を変えました。", plain:"家具の位置を変えました。", en:"position" },
+  { lesson:"26", word:"荷造り", reading:"にづくり", romaji:"", illus:"none", emoji:"", example:"引っ越しの前に{荷造り}をしています。", plain:"引っ越しの前に荷造りをしています。", en:"packing" },
+  { lesson:"26", word:"段ボール箱", reading:"だんボールばこ", romaji:"", illus:"emoji", emoji:"📦", example:"本を{段ボール箱}に入れました。", plain:"本を段ボール箱に入れました。", en:"cardboard box" },
+  { lesson:"26", word:"ひとつずつ", reading:"ひとつずつ", romaji:"", illus:"none", emoji:"", example:"{ひとつずつ}確認しながら荷造りします。", plain:"ひとつずつ確認しながら荷造りします。", en:"one each, one at a time" },
+  { lesson:"26", word:"包む", reading:"つつむ", romaji:"", illus:"none", emoji:"", example:"割れものを紙で{包みます}。", plain:"割れものを紙で包みます。", en:"wrap" },
+  { lesson:"26", word:"引っ越す", reading:"ひっこす", romaji:"", illus:"none", emoji:"", example:"新しいアパートに{引っ越しました}。", plain:"新しいアパートに引っ越しました。", en:"move (from home to home)" },
+  { lesson:"26", word:"転入届", reading:"てんにゅうとどけ", romaji:"", illus:"none", emoji:"", example:"市役所に{転入届}を出しに行きます。", plain:"市役所に転入届を出しに行きます。", en:"notification of moving in" },
+  { lesson:"26", word:"運転免許証", reading:"うんてんめんきょしょう", romaji:"", illus:"none", emoji:"", example:"{運転免許証}で身分を確認できます。", plain:"運転免許証で身分を確認できます。", en:"driver's license" },
+  { lesson:"26", word:"クレジットカード", reading:"クレジットカード", romaji:"", illus:"none", emoji:"", example:"{クレジットカード}の住所変更をしました。", plain:"クレジットカードの住所変更をしました。", en:"credit card" },
+  { lesson:"26", word:"住所変更", reading:"じゅうしょへんこう", romaji:"", illus:"none", emoji:"", example:"引っ越したら、{住所変更}の手続きをします。", plain:"引っ越したら、住所変更の手続きをします。", en:"change of address" },
+  { lesson:"26", word:"住所変更（を）する", reading:"じゅうしょへんこうをする", romaji:"", illus:"none", emoji:"", example:"市役所で{住所変更をしました}。", plain:"市役所で住所変更をしました。", en:"change one's address" },
+  { lesson:"26", word:"外国人", reading:"がいこくじん", romaji:"", illus:"none", emoji:"", example:"日本には多くの{外国人}が住んでいます。", plain:"日本には多くの外国人が住んでいます。", en:"foreigner" },
+  { lesson:"26", word:"場合", reading:"ばあい", romaji:"", illus:"none", emoji:"", example:"緊急の{場合}は119番に電話してください。", plain:"緊急の場合は119番に電話してください。", en:"a case" },
+  { lesson:"26", word:"在留カード", reading:"ざいりゅうカード", romaji:"", illus:"none", emoji:"", example:"{在留カード}は常に持ち歩いてください。", plain:"在留カードは常に持ち歩いてください。", en:"resident card" },
+  { lesson:"26", word:"安心", reading:"あんしん", romaji:"", illus:"none", emoji:"", example:"家族の声を聞いて{安心しました}。", plain:"家族の声を聞いて安心しました。", en:"peace of mind" },
+  { lesson:"26", word:"たんす", reading:"たんす", romaji:"", illus:"none", emoji:"", example:"{たんす}に服をしまいます。", plain:"たんすに服をしまいます。", en:"wardrobe" },
+  { lesson:"26", word:"中身", reading:"なかみ", romaji:"", illus:"none", emoji:"", example:"箱の{中身}を確認してください。", plain:"箱の中身を確認してください。", en:"contents" },
+  { lesson:"26", word:"ポケット", reading:"ポケット", romaji:"", illus:"none", emoji:"", example:"{ポケット}に財布を入れています。", plain:"ポケットに財布を入れています。", en:"pocket" },
+  { lesson:"26", word:"そのまま", reading:"そのまま", romaji:"", illus:"none", emoji:"", example:"{そのまま}にしておいてください。", plain:"そのままにしておいてください。", en:"as it is" },
+  { lesson:"27", word:"以外", reading:"それいがい", romaji:"", illus:"none", emoji:"", example:"日本語{以外}の言語も勉強しています。", plain:"日本語以外の言語も勉強しています。", en:"aside (from that)" },
+  { lesson:"27", word:"具合", reading:"ぐあい", romaji:"", illus:"none", emoji:"", example:"体の{具合}はどうですか。", plain:"体の具合はどうですか。", en:"condition" },
+  { lesson:"27", word:"受付", reading:"はじうけつけが始まる", romaji:"", illus:"none", emoji:"", example:"病院の{受付}で名前を書きました。", plain:"病院の受付で名前を書きました。", en:"doors open (lit. reception begins)" },
+  { lesson:"27", word:"列", reading:"れつ", romaji:"", illus:"none", emoji:"", example:"{列}に並んでください。", plain:"列に並んでください。", en:"a line, a row" },
+  { lesson:"27", word:"最後", reading:"さいご", romaji:"", illus:"none", emoji:"", example:"{最後}まであきらめないでください。", plain:"最後まであきらめないでください。", en:"last" },
+  { lesson:"27", word:"並ぶ", reading:"ならぶ", romaji:"", illus:"none", emoji:"", example:"チケットを買うために{並んでいます}。", plain:"チケットを買うために並んでいます。", en:"stand in line,line up" },
+  { lesson:"27", word:"学校説明会", reading:"がっこうせつめいかい", romaji:"", illus:"none", emoji:"", example:"{学校説明会}で学校のことを詳しく聞きました。", plain:"学校説明会で学校のことを詳しく聞きました。", en:"explanatory meeting for school" },
+  { lesson:"27", word:"会場", reading:"かいじょう", romaji:"", illus:"none", emoji:"", example:"試験の{会場}はどこですか。", plain:"試験の会場はどこですか。", en:"venue, assembly hall" },
+  { lesson:"27", word:"人でいっぱい", reading:"ひといっぱい", romaji:"", illus:"none", emoji:"", example:"会場は{人でいっぱい}でした。", plain:"会場は人でいっぱいでした。", en:"full (of people)" },
+  { lesson:"27", word:"帰り道", reading:"かえりみち", romaji:"", illus:"none", emoji:"", example:"{帰り道}にコンビニに寄りました。", plain:"帰り道にコンビニに寄りました。", en:"return road" },
+  { lesson:"27", word:"学科", reading:"がっか", romaji:"", illus:"none", emoji:"", example:"どの{学科}に入りたいですか。", plain:"どの学科に入りたいですか。", en:"department, course,subject" },
+  { lesson:"27", word:"入学試験", reading:"にゅうがくしけん", romaji:"", illus:"none", emoji:"", example:"{入学試験}は来月です。", plain:"入学試験は来月です。", en:"(school) entrance exam" },
+  { lesson:"27", word:"面接試験", reading:"めんせつしけん", romaji:"", illus:"none", emoji:"", example:"{面接試験}では自分の気持ちを伝えます。", plain:"面接試験では自分の気持ちを伝えます。", en:"oral examination" },
+  { lesson:"27", word:"受験生", reading:"じゅけんせい", romaji:"", illus:"none", emoji:"", example:"{受験生}は毎日一生懸命勉強しています。", plain:"受験生は毎日一生懸命勉強しています。", en:"student preparing for an exam" },
+  { lesson:"27", word:"行う", reading:"おこなう", romaji:"", illus:"none", emoji:"", example:"試験は来月{行います}。", plain:"試験は来月行います。", en:"do, hold, carry out" },
+  { lesson:"27", word:"マナー", reading:"マナー", romaji:"", illus:"none", emoji:"", example:"面接では{マナー}に気をつけてください。", plain:"面接ではマナーに気をつけてください。", en:"manners" },
+  { lesson:"27", word:"面接室", reading:"めんせつしつ", romaji:"", illus:"none", emoji:"", example:"{面接室}に入る前に、ノックをします。", plain:"面接室に入る前に、ノックをします。", en:"interview room" },
+  { lesson:"27", word:"ノック（を）する", reading:"ノックをする", romaji:"", illus:"none", emoji:"", example:"ドアを{ノックして}から入ります。", plain:"ドアをノックしてから入ります。", en:"knock" },
+  { lesson:"27", word:"すぐに", reading:"すぐに", romaji:"", illus:"none", emoji:"", example:"わからないことは{すぐに}聞いてください。", plain:"わからないことはすぐに聞いてください。", en:"right away" },
+  { lesson:"27", word:"答える", reading:"こたえる", romaji:"", illus:"none", emoji:"", example:"先生の質問に{答えました}。", plain:"先生の質問に答えました。", en:"answer" },
+  { lesson:"27", word:"組む", reading:"あしくむ", romaji:"", illus:"none", emoji:"", example:"面接では足を{組まない}でください。", plain:"面接では足を組まないでください。", en:"cross (one's legs)" },
+  { lesson:"27", word:"意味", reading:"いみ", romaji:"", illus:"none", emoji:"", example:"この言葉の{意味}を教えてください。", plain:"この言葉の意味を教えてください。", en:"meaning" },
+  { lesson:"27", word:"聞こえる", reading:"きこえる", romaji:"", illus:"none", emoji:"", example:"後ろの席まで声が{聞こえますか}。", plain:"後ろの席まで声が聞こえますか。", en:"be audible" },
+  { lesson:"27", word:"専門的", reading:"せんもんてき", romaji:"", illus:"none", emoji:"", example:"{専門的}な質問で答えにくかったです。", plain:"専門的な質問で答えにくかったです。", en:"specialized" },
+  { lesson:"27", word:"できるだけ", reading:"できるだけ", romaji:"", illus:"none", emoji:"", example:"{できるだけ}早く来てください。", plain:"できるだけ早く来てください。", en:"as… as possible" },
+  { lesson:"27", word:"予想する", reading:"よそうする", romaji:"", illus:"none", emoji:"", example:"試験に出そうな問題を{予想しました}。", plain:"試験に出そうな問題を予想しました。", en:"anticipate, guess" },
+  { lesson:"27", word:"落ち着く", reading:"おちつく", romaji:"", illus:"none", emoji:"", example:"深呼吸をして{落ち着きました}。", plain:"深呼吸をして落ち着きました。", en:"calm down" },
+  { lesson:"28", word:"快適", reading:"かいてき", romaji:"", illus:"none", emoji:"", example:"新しいアパートはとても{快適}です。", plain:"新しいアパートはとても快適です。", en:"comfortable" },
+  { lesson:"28", word:"変える", reading:"かえる", romaji:"", illus:"none", emoji:"", example:"生活の習慣を{変えて}みます。", plain:"生活の習慣を変えてみます。", en:"change (something)" },
+  { lesson:"28", word:"（お）見舞い", reading:"おみまい", romaji:"", illus:"none", emoji:"", example:"入院した友だちに{お見舞い}に行きました。", plain:"入院した友だちにお見舞いに行きました。", en:"a visit (to express sympathy)" },
+  { lesson:"28", word:"連れて行く", reading:"つれていく", romaji:"", illus:"none", emoji:"", example:"子どもを公園に{連れて行きました}。", plain:"子どもを公園に連れて行きました。", en:"bring (someone)" },
+  { lesson:"28", word:"送る", reading:"ひとおくる", romaji:"", illus:"none", emoji:"", example:"友だちを駅まで{送りました}。", plain:"友だちを駅まで送りました。", en:"send off (a person)" },
+  { lesson:"28", word:"提出する", reading:"ていしゅつする", romaji:"", illus:"none", emoji:"", example:"レポートを先生に{提出しました}。", plain:"レポートを先生に提出しました。", en:"submit, turn in" },
+  { lesson:"28", word:"入管", reading:"にゅうかん", romaji:"", illus:"none", emoji:"", example:"{入管}でビザの手続きをしました。", plain:"入管でビザの手続きをしました。", en:"immigrations" },
+  { lesson:"28", word:"実家", reading:"じっか", romaji:"", illus:"none", emoji:"", example:"久しぶりに{実家}に帰りました。", plain:"久しぶりに実家に帰りました。", en:"one's parents' home" },
+  { lesson:"28", word:"片付く", reading:"かたづく", romaji:"", illus:"none", emoji:"", example:"引っ越しの荷物が{片付きました}。", plain:"引っ越しの荷物が片付きました。", en:"be put in order, finish" },
+  { lesson:"28", word:"お礼（を）する", reading:"おれいをする", romaji:"", illus:"none", emoji:"", example:"助けてもらったので、{お礼をしました}。", plain:"助けてもらったので、お礼をしました。", en:"show gratitude" },
+  { lesson:"28", word:"ごちそうする", reading:"ごちそうする", romaji:"", illus:"none", emoji:"", example:"先輩に食事を{ごちそうしてもらいました}。", plain:"先輩に食事をごちそうしてもらいました。", en:"treat (someone to a meal)" },
+  { lesson:"28", word:"韓国語", reading:"かんこくご", romaji:"", illus:"none", emoji:"", example:"{韓国語}を勉強し始めました。", plain:"韓国語を勉強し始めました。", en:"Korean （language）" },
+  { lesson:"28", word:"急", reading:"きゅう", romaji:"", illus:"none", emoji:"", example:"{急}で申し訳ありませんが、お願いできますか。", plain:"急で申し訳ありませんが、お願いできますか。", en:"urgent, sudden" },
+  { lesson:"28", word:"紹介する", reading:"しょうかいする", romaji:"", illus:"none", emoji:"", example:"友だちに彼氏を{紹介しました}。", plain:"友だちに彼氏を紹介しました。", en:"introduce" },
+  { lesson:"28", word:"満員", reading:"まんいん", romaji:"", illus:"none", emoji:"", example:"バスが{満員}で乗れませんでした。", plain:"バスが満員で乗れませんでした。", en:"crowded, full" },
+  { lesson:"28", word:"感じ", reading:"かんじ", romaji:"", illus:"none", emoji:"", example:"このお店はいい{感じ}ですね。", plain:"このお店はいい感じですね。", en:"feeling, sense" },
+  { lesson:"28", word:"雰囲気", reading:"ふんいき", romaji:"", illus:"none", emoji:"", example:"このカフェは落ち着いた{雰囲気}です。", plain:"このカフェは落ち着いた雰囲気です。", en:"atmosphere" },
+  { lesson:"28", word:"雰囲気がいい", reading:"ふんいきがいい", romaji:"", illus:"none", emoji:"", example:"このレストランは{雰囲気がいい}です。", plain:"このレストランは雰囲気がいいです。", en:"nice (atmosphere)" },
+  { lesson:"28", word:"待ち合わせ", reading:"まちあわせ", romaji:"", illus:"none", emoji:"", example:"駅で{待ち合わせ}をします。", plain:"駅で待ち合わせをします。", en:"appointment, arrangement to meet" },
+  { lesson:"29", word:"入院する", reading:"にゅういんする", romaji:"", illus:"none", emoji:"", example:"父が{入院して}います。", plain:"父が入院しています。", en:"be hospitalized" },
+  { lesson:"29", word:"心配する", reading:"しんぱいする", romaji:"", illus:"none", emoji:"", example:"病気の友だちのことが{心配です}。", plain:"病気の友だちのことが心配です。", en:"worry" },
+  { lesson:"29", word:"びっくりする", reading:"びっくりする", romaji:"", illus:"none", emoji:"", example:"急に大きな音がして{びっくりしました}。", plain:"急に大きな音がしてびっくりしました。", en:"be surprised" },
+  { lesson:"29", word:"久しぶり", reading:"ひさしぶり", romaji:"", illus:"none", emoji:"", example:"{久しぶり}に故郷の料理を食べました。", plain:"久しぶりに故郷の料理を食べました。", en:"for the first time in a long time" },
+  { lesson:"29", word:"中止", reading:"ちゅうし", romaji:"", illus:"none", emoji:"", example:"雨で試合が{中止}になりました。", plain:"雨で試合が中止になりました。", en:"cancellation" },
+  { lesson:"29", word:"いただく", reading:"いただくもらう", romaji:"", illus:"none", emoji:"", example:"お土産を{いただきました}。ありがとうございます。", plain:"お土産をいただきました。ありがとうございます。", en:"receive" },
+  { lesson:"29", word:"先日", reading:"せんじつ", romaji:"", illus:"none", emoji:"", example:"{先日}はありがとうございました。", plain:"先日はありがとうございました。", en:"the other day" },
+  { lesson:"29", word:"差し上げる", reading:"さしあげる［あげる］", romaji:"", illus:"none", emoji:"", example:"これをどうぞ、{差し上げます}。", plain:"これをどうぞ、差し上げます。", en:"give" },
+  { lesson:"29", word:"心細い", reading:"こころぼそい", romaji:"", illus:"none", emoji:"", example:"一人でいると{心細い}気持ちになります。", plain:"一人でいると心細い気持ちになります。", en:"lonely,helpless" },
+  { lesson:"29", word:"周り", reading:"まわり", romaji:"", illus:"none", emoji:"", example:"{周り}の人に迷惑をかけないようにします。", plain:"周りの人に迷惑をかけないようにします。", en:"surroundings" },
+  { lesson:"29", word:"安心する", reading:"あんしんする", romaji:"", illus:"none", emoji:"", example:"友だちの声を聞いて、{安心しました}。", plain:"友だちの声を聞いて、安心しました。", en:"be relieved, feel relieved" },
+  { lesson:"29", word:"そろそろ", reading:"そろそろ", romaji:"", illus:"none", emoji:"", example:"{そろそろ}帰る時間です。", plain:"そろそろ帰る時間です。", en:"by and by, soon" },
+  { lesson:"29", word:"履歴書", reading:"りれきしょ", romaji:"", illus:"none", emoji:"", example:"就職のために{履歴書}を書きました。", plain:"就職のために履歴書を書きました。", en:"resume, CV" },
+  { lesson:"29", word:"うまくいく", reading:"うまくいく", romaji:"", illus:"none", emoji:"", example:"試験が{うまくいく}といいですね。", plain:"試験がうまくいくといいですね。", en:"go well" },
+  { lesson:"29", word:"満員電車", reading:"まんいんでんしゃ", romaji:"", illus:"none", emoji:"", example:"朝の{満員電車}はとても疲れます。", plain:"朝の満員電車はとても疲れます。", en:"crowded train" },
+  { lesson:"30", word:"取る", reading:"よやくとる", romaji:"", illus:"none", emoji:"", example:"レストランの予約を{取りました}。", plain:"レストランの予約を取りました。", en:"get (a reservation)" },
+  { lesson:"30", word:"任せる", reading:"まかせる", romaji:"", illus:"none", emoji:"", example:"この仕事はあなたに{任せます}。", plain:"この仕事はあなたに任せます。", en:"entrust, leave it to" },
+  { lesson:"30", word:"注文する", reading:"ちゅうもんする", romaji:"", illus:"none", emoji:"", example:"ラーメンを{注文しました}。", plain:"ラーメンを注文しました。", en:"order" },
+  { lesson:"30", word:"いらっしゃる", reading:"くいらっしゃる来る", romaji:"", illus:"none", emoji:"", example:"先生は今教室に{いらっしゃいます}。", plain:"先生は今教室にいらっしゃいます。", en:"come" },
+  { lesson:"30", word:"合う", reading:"くちあう", romaji:"", illus:"none", emoji:"", example:"この料理は私の口に{合いません}。", plain:"この料理は私の口に合いません。", en:"match, fit (to taste good)" },
+  { lesson:"30", word:"いただき", reading:"たいただく食べる", romaji:"", illus:"none", emoji:"", example:"では、{いただきます}。", plain:"では、いただきます。", en:"eat" },
+  { lesson:"30", word:"遠慮する", reading:"えんりょする", romaji:"", illus:"none", emoji:"", example:"{遠慮しないで}、たくさん食べてください。", plain:"遠慮しないで、たくさん食べてください。", en:"hesitate" },
+  { lesson:"30", word:"出口", reading:"でぐち", romaji:"", illus:"none", emoji:"", example:"電車の{出口}はどこですか。", plain:"電車の出口はどこですか。", en:"exit" },
+  { lesson:"30", word:"なさる", reading:"なさるする", romaji:"", illus:"none", emoji:"", example:"何を{なさいます}か。", plain:"何をなさいますか。", en:"do" },
+  { lesson:"30", word:"召し上がる", reading:"のめしあがる飲む", romaji:"", illus:"none", emoji:"", example:"どうぞ、{召し上がって}ください。", plain:"どうぞ、召し上がってください。", en:"drink" },
+  { lesson:"30", word:"ご覧になる", reading:"みごらんになる見る", romaji:"", illus:"none", emoji:"", example:"この絵を{ご覧になった}ことがありますか。", plain:"この絵をご覧になったことがありますか。", en:"look" },
+  { lesson:"30", word:"ご存じ", reading:"しごぞんじ知る", romaji:"", illus:"none", emoji:"", example:"田中先生を{ご存じですか}。", plain:"田中先生をご存じですか。", en:"know" },
+  { lesson:"30", word:"ゼミ旅行", reading:"ゼミりょこう", romaji:"", illus:"none", emoji:"", example:"{ゼミ旅行}で京都に行きました。", plain:"ゼミ旅行で京都に行きました。", en:"class trip (with fellow seminar students)" },
+  { lesson:"30", word:"拝見する", reading:"みはいけんする見る", romaji:"", illus:"none", emoji:"", example:"レポートを{拝見しました}。", plain:"レポートを拝見しました。", en:"look, see" },
+  { lesson:"30", word:"参る", reading:"いまいる行く", romaji:"", illus:"none", emoji:"", example:"すぐに{参ります}。少々お待ちください。", plain:"すぐに参ります。少々お待ちください。", en:"go" },
+  { lesson:"30", word:"参る", reading:"くまいる来る", romaji:"", illus:"none", emoji:"", example:"すぐに{参ります}。少々お待ちください。", plain:"すぐに参ります。少々お待ちください。", en:"come" },
+  { lesson:"30", word:"存じる", reading:"しぞんじる知る", romaji:"", illus:"none", emoji:"", example:"その件については私は{存じません}。", plain:"その件については私は存じません。", en:"know" },
+  { lesson:"30", word:"切符売場", reading:"きっぷうりば", romaji:"", illus:"none", emoji:"", example:"{切符売場}で新幹線のチケットを買いました。", plain:"切符売場で新幹線のチケットを買いました。", en:"ticket stand, ticket kiosk" },
+  { lesson:"31", word:"（お）祭り", reading:"おまつり", romaji:"", illus:"none", emoji:"", example:"夏の{お祭り}に行きました。", plain:"夏のお祭りに行きました。", en:"festival" },
+  { lesson:"31", word:"無理", reading:"むりかもしれない", romaji:"", illus:"none", emoji:"", example:"体に{無理}をしないでください。", plain:"体に無理をしないでください。", en:"(may be) impossible" },
+  { lesson:"31", word:"聞かせる", reading:"きかせる", romaji:"", illus:"none", emoji:"", example:"面白い話を{聞かせて}ください。", plain:"面白い話を聞かせてください。", en:"(read, sing, tell) to someone" },
+  { lesson:"31", word:"秋", reading:"あき", romaji:"", illus:"none", emoji:"", example:"{秋}になると、葉っぱが赤くなります。", plain:"秋になると、葉っぱが赤くなります。", en:"fall, autumn" },
+  { lesson:"31", word:"神社", reading:"じんじゃ", romaji:"", illus:"emoji", emoji:"⛩️", example:"正月に{神社}に行きました。", plain:"正月に神社に行きました。", en:"shrine" },
+  { lesson:"31", word:"事故", reading:"じこ", romaji:"", illus:"none", emoji:"", example:"道で{事故}があって、渋滞しています。", plain:"道で事故があって、渋滞しています。", en:"accident" },
+  { lesson:"31", word:"呼んで来る", reading:"よんでくる", romaji:"", illus:"none", emoji:"", example:"先生を{呼んで来て}ください。", plain:"先生を呼んで来てください。", en:"get (someone)" },
+  { lesson:"31", word:"説明会", reading:"せつめいかい", romaji:"", illus:"none", emoji:"", example:"明日、進学{説明会}があります。", plain:"明日、進学説明会があります。", en:"explanatory meeting" },
+  { lesson:"31", word:"改札", reading:"かいさつ", romaji:"", illus:"none", emoji:"", example:"{改札}でICカードをかざします。", plain:"改札でICカードをかざします。", en:"ticket gate" },
+  { lesson:"31", word:"間違える", reading:"まちがえる", romaji:"", illus:"none", emoji:"", example:"電車の乗り口を{間違えました}。", plain:"電車の乗り口を間違えました。", en:"make a mistake" },
+  { lesson:"31", word:"反対方向", reading:"はんたいほうこう", romaji:"", illus:"none", emoji:"", example:"{反対方向}の電車に乗ってしまいました。", plain:"反対方向の電車に乗ってしまいました。", en:"opposite direction" },
+  { lesson:"31", word:"あわてる", reading:"あわてる", romaji:"", illus:"none", emoji:"", example:"時間がなくて{あわてて}家を出ました。", plain:"時間がなくてあわてて家を出ました。", en:"be upset, rush" },
+  { lesson:"31", word:"せっかく", reading:"せっかく", romaji:"", illus:"none", emoji:"", example:"{せっかく}来たので、もう少しいましょう。", plain:"せっかく来たので、もう少しいましょう。", en:"kindly" },
+  { lesson:"31", word:"すばらしい", reading:"すばらしい", romaji:"", illus:"none", emoji:"", example:"この景色は本当に{すばらしい}です。", plain:"この景色は本当にすばらしいです。", en:"wonderful,splendid" },
+  { lesson:"31", word:"感動する", reading:"かんどうする", romaji:"", illus:"none", emoji:"", example:"その映画を見て{感動しました}。", plain:"その映画を見て感動しました。", en:"be moved (emotionally)" },
+  { lesson:"31", word:"出店", reading:"でみせ", romaji:"", illus:"none", emoji:"", example:"お祭りで{出店}のたこ焼きを食べました。", plain:"お祭りで出店のたこ焼きを食べました。", en:"a branch store, a stand" },
+  { lesson:"31", word:"かき氷", reading:"かきごおり", romaji:"", illus:"emoji", emoji:"🍧", example:"夏祭りで{かき氷}を食べました。", plain:"夏祭りでかき氷を食べました。", en:"shaved ice with syrup on top" },
+  { lesson:"31", word:"踏む", reading:"ふむ", romaji:"", illus:"none", emoji:"", example:"電車の中で足を{踏まれました}。", plain:"電車の中で足を踏まれました。", en:"step on" },
+  { lesson:"31", word:"こぼす", reading:"こぼす", romaji:"", illus:"none", emoji:"", example:"飲み物を{こぼして}しまいました。", plain:"飲み物をこぼしてしまいました。", en:"spill" },
+  { lesson:"31", word:"旅行かばん", reading:"りょこうかばん", romaji:"", illus:"none", emoji:"", example:"大きな{旅行かばん}を持って空港へ行きました。", plain:"大きな旅行かばんを持って空港へ行きました。", en:"travel bag" },
+  { lesson:"31", word:"一生懸命", reading:"いっしょうけんめい", romaji:"", illus:"none", emoji:"", example:"{一生懸命}勉強して、試験に合格しました。", plain:"一生懸命勉強して、試験に合格しました。", en:"hard,earnestly" },
+  { lesson:"31", word:"遅刻する", reading:"ちこくする", romaji:"", illus:"none", emoji:"", example:"電車が遅れて、授業に{遅刻しました}。", plain:"電車が遅れて、授業に遅刻しました。", en:"be late" },
+  { lesson:"31", word:"見える", reading:"みえる", romaji:"", illus:"none", emoji:"", example:"ここから富士山が{見えます}。", plain:"ここから富士山が見えます。", en:"be seen" },
+  { lesson:"31", word:"有名", reading:"ゆうめい", romaji:"", illus:"none", emoji:"", example:"京都は{有名}な観光地です。", plain:"京都は有名な観光地です。", en:"famous" },
+  { lesson:"31", word:"叱る", reading:"しかる", romaji:"", illus:"none", emoji:"", example:"先生に{叱られました}。", plain:"先生に叱られました。", en:"scold" },
+  { lesson:"31", word:"背中", reading:"せなか", romaji:"", illus:"none", emoji:"", example:"荷物が重くて{背中}が痛くなりました。", plain:"荷物が重くて背中が痛くなりました。", en:"(a person's) back" },
+  { lesson:"31", word:"泣く", reading:"なく", romaji:"", illus:"none", emoji:"", example:"映画を見て{泣きました}。", plain:"映画を見て泣きました。", en:"cry" },
+  { lesson:"31", word:"ほめる", reading:"ほめる", romaji:"", illus:"none", emoji:"", example:"先生に絵を{ほめられました}。", plain:"先生に絵をほめられました。", en:"praise" },
+  { lesson:"31", word:"観光客", reading:"かんこうきゃく", romaji:"", illus:"none", emoji:"", example:"京都には外国からの{観光客}が多いです。", plain:"京都には外国からの観光客が多いです。", en:"tourist" },
+  { lesson:"32", word:"案内係", reading:"あんないがかり", romaji:"", illus:"none", emoji:"", example:"{案内係}の人に道を聞きました。", plain:"案内係の人に道を聞きました。", en:"information desk clerk" },
+  { lesson:"32", word:"見学", reading:"けんがく", romaji:"", illus:"none", emoji:"", example:"工場を{見学}しました。", plain:"工場を見学しました。", en:"a visit, a tour" },
+  { lesson:"32", word:"誕生する", reading:"たんじょうする", romaji:"", illus:"none", emoji:"", example:"この会社は10年前に{誕生しました}。", plain:"この会社は10年前に誕生しました。", en:"be born" },
+  { lesson:"32", word:"輸出する", reading:"ゆしゅつする", romaji:"", illus:"none", emoji:"", example:"日本は車を外国に{輸出しています}。", plain:"日本は車を外国に輸出しています。", en:"export" },
+  { lesson:"32", word:"生産する", reading:"せいさんする", romaji:"", illus:"none", emoji:"", example:"この工場では1日1000個{生産します}。", plain:"この工場では1日1000個生産します。", en:"produce" },
+  { lesson:"32", word:"世界中", reading:"せかいじゅう", romaji:"", illus:"none", emoji:"", example:"この商品は{世界中}で使われています。", plain:"この商品は世界中で使われています。", en:"all over the world" },
+  { lesson:"32", word:"工場", reading:"こうじょう", romaji:"", illus:"emoji", emoji:"🏭", example:"父は車の{工場}で働いています。", plain:"父は車の工場で働いています。", en:"factory" },
+  { lesson:"32", word:"見学する", reading:"けんがくする", romaji:"", illus:"none", emoji:"", example:"日本語の学生が工場を{見学しました}。", plain:"日本語の学生が工場を見学しました。", en:"visit, tour" },
+  { lesson:"32", word:"写真撮影", reading:"しゃしんさつえい", romaji:"", illus:"none", emoji:"", example:"ここでは{写真撮影}ができません。", plain:"ここでは写真撮影ができません。", en:"photography" },
+  { lesson:"32", word:"混ぜる", reading:"まぜる", romaji:"", illus:"none", emoji:"", example:"小麦粉と卵を{混ぜます}。", plain:"小麦粉と卵を混ぜます。", en:"mix (something)" },
+  { lesson:"32", word:"のばす", reading:"のばす", romaji:"", illus:"none", emoji:"", example:"生地をうすく{のばします}。", plain:"生地をうすくのばします。", en:"extend, stretch (something)" },
+  { lesson:"32", word:"（１）ｍｍ", reading:"１ミリ", romaji:"", illus:"none", emoji:"", example:"鉄板の厚さは1ミリです。", plain:"鉄板の厚さは1ミリです。", en:"(1) millimeter" },
+  { lesson:"32", word:"厚さ", reading:"あつさ", romaji:"", illus:"none", emoji:"", example:"この板の{厚さ}は5ミリです。", plain:"この板の厚さは5ミリです。", en:"thickness" },
+  { lesson:"32", word:"ロボット", reading:"ロボット", romaji:"", illus:"emoji", emoji:"🤖", example:"工場では{ロボット}が作業をしています。", plain:"工場ではロボットが作業をしています。", en:"robot" },
+  { lesson:"32", word:"多く", reading:"おおく", romaji:"", illus:"none", emoji:"", example:"外国人の{多く}は東京に住んでいます。", plain:"外国人の多くは東京に住んでいます。", en:"many" },
+  { lesson:"32", word:"食料", reading:"しょくりょう", romaji:"", illus:"none", emoji:"", example:"{食料}を大切にしましょう。", plain:"食料を大切にしましょう。", en:"food" },
+  { lesson:"32", word:"輸入する", reading:"ゆにゅうする", romaji:"", illus:"none", emoji:"", example:"日本は多くの食品を{輸入しています}。", plain:"日本は多くの食品を輸入しています。", en:"import" },
+  { lesson:"32", word:"小麦", reading:"こむぎ", romaji:"", illus:"none", emoji:"", example:"パンは{小麦}から作られています。", plain:"パンは小麦から作られています。", en:"wheat" },
+  { lesson:"32", word:"ガイド", reading:"ガイド", romaji:"", illus:"none", emoji:"", example:"観光{ガイド}に説明してもらいました。", plain:"観光ガイドに説明してもらいました。", en:"guide" },
+  { lesson:"32", word:"法隆寺", reading:"ほうりゅうじ", romaji:"", illus:"none", emoji:"", example:"{法隆寺}は奈良にある有名なお寺です。", plain:"法隆寺は奈良にある有名なお寺です。", en:"Horyu-ji temple" },
+  { lesson:"32", word:"建てる", reading:"たてる", romaji:"", illus:"none", emoji:"", example:"このビルは50年前に{建てられました}。", plain:"このビルは50年前に建てられました。", en:"build" },
+  { lesson:"32", word:"本物", reading:"ほんもの", romaji:"", illus:"none", emoji:"", example:"これは{本物}の金でできています。", plain:"これは本物の金でできています。", en:"real, genuine" },
+  { lesson:"32", word:"人間", reading:"にんげん", romaji:"", illus:"none", emoji:"", example:"{人間}はいろいろな言語を話せます。", plain:"人間はいろいろな言語を話せます。", en:"human, humankind" },
+  { lesson:"32", word:"検査をする", reading:"けんさをする", romaji:"", illus:"none", emoji:"", example:"品質の{検査をして}から出荷します。", plain:"品質の検査をしてから出荷します。", en:"inspect" },
+  { lesson:"32", word:"形", reading:"かたち", romaji:"", illus:"none", emoji:"", example:"この{形}は三角形です。", plain:"この形は三角形です。", en:"shape, form" },
+  { lesson:"32", word:"合わせる", reading:"あわせる", romaji:"", illus:"none", emoji:"", example:"部品を{合わせて}製品を作ります。", plain:"部品を合わせて製品を作ります。", en:"put together, combine" },
+  { lesson:"32", word:"研究する", reading:"けんきゅうする", romaji:"", illus:"none", emoji:"", example:"新しい薬を{研究しています}。", plain:"新しい薬を研究しています。", en:"study, research" },
+  { lesson:"32", word:"資料", reading:"しりょう", romaji:"", illus:"none", emoji:"", example:"発表に使う{資料}を作りました。", plain:"発表に使う資料を作りました。", en:"materials" },
+  { lesson:"32", word:"頼む", reading:"たのむ", romaji:"", illus:"none", emoji:"", example:"友だちに荷物を{頼みました}。", plain:"友だちに荷物を頼みました。", en:"request" },
+  { lesson:"33", word:"マラソン選手", reading:"マラソンせんしゅ", romaji:"", illus:"emoji", emoji:"🏃", example:"有名な{マラソン選手}が来ました。", plain:"有名なマラソン選手が来ました。", en:"marathon contestant" },
+  { lesson:"33", word:"母親", reading:"ははおや", romaji:"", illus:"none", emoji:"", example:"{母親}は子どもを一生懸命育てます。", plain:"母親は子どもを一生懸命育てます。", en:"mother" },
+  { lesson:"33", word:"選手", reading:"せんしゅ", romaji:"", illus:"none", emoji:"", example:"あの{選手}はとても速く走ります。", plain:"あの選手はとても速く走ります。", en:"player" },
+  { lesson:"33", word:"優勝する", reading:"ゆうしょうする", romaji:"", illus:"none", emoji:"", example:"日本チームが{優勝しました}。", plain:"日本チームが優勝しました。", en:"win the championship" },
+  { lesson:"33", word:"魚をとる", reading:"さかなをとる", romaji:"", illus:"none", emoji:"", example:"海で{魚をとりました}。", plain:"海で魚をとりました。", en:"catch (a fish)" },
+  { lesson:"33", word:"登る", reading:"のぼる", romaji:"", illus:"none", emoji:"", example:"富士山に{登った}ことがありますか。", plain:"富士山に登ったことがありますか。", en:"climb, ascend" },
+  { lesson:"33", word:"陸上", reading:"りくじょう", romaji:"", illus:"none", emoji:"", example:"高校のとき、{陸上}部に入っていました。", plain:"高校のとき、陸上部に入っていました。", en:"track and field" },
+  { lesson:"33", word:"陸上部", reading:"りくじょうぶ", romaji:"", illus:"none", emoji:"", example:"{陸上部}で毎日練習しています。", plain:"陸上部で毎日練習しています。", en:"track club" },
+  { lesson:"33", word:"厳しい", reading:"きびしい", romaji:"", illus:"none", emoji:"", example:"練習は{厳しい}ですが、楽しいです。", plain:"練習は厳しいですが、楽しいです。", en:"strict" },
+  { lesson:"33", word:"弱い", reading:"はよわい", romaji:"", illus:"none", emoji:"", example:"最近、体が{弱く}なった気がします。", plain:"最近、体が弱くなった気がします。", en:"weak (teeth)" },
+  { lesson:"33", word:"社長", reading:"しゃちょう", romaji:"", illus:"none", emoji:"", example:"田中さんはこの会社の{社長}です。", plain:"田中さんはこの会社の社長です。", en:"company president, CEO" },
+  { lesson:"33", word:"敬語", reading:"けいご", romaji:"", illus:"none", emoji:"", example:"目上の人には{敬語}を使います。", plain:"目上の人には敬語を使います。", en:"honorific language" },
+  { lesson:"33", word:"部長", reading:"ぶちょう", romaji:"", illus:"none", emoji:"", example:"営業{部長}に報告します。", plain:"営業部長に報告します。", en:"general manager" },
+  { lesson:"33", word:"係長", reading:"かかりちょう", romaji:"", illus:"none", emoji:"", example:"{係長}に仕事のことを相談しました。", plain:"係長に仕事のことを相談しました。", en:"manager" },
+  { lesson:"33", word:"体力", reading:"たいりょく", romaji:"", illus:"none", emoji:"", example:"{体力}をつけるために運動をしています。", plain:"体力をつけるために運動をしています。", en:"strength" },
+  { lesson:"33", word:"監督", reading:"かんとく", romaji:"", illus:"none", emoji:"", example:"サッカーチームの{監督}が代わりました。", plain:"サッカーチームの監督が代わりました。", en:"director" },
+  { lesson:"33", word:"１ｋｍ", reading:"１キロ", romaji:"", illus:"none", emoji:"", example:"毎朝1キロ走っています。", plain:"毎朝1キロ走っています。", en:"(1) kilometer" },
+  { lesson:"33", word:"塾", reading:"じゅく", romaji:"", illus:"none", emoji:"", example:"子どもを{塾}に通わせています。", plain:"子どもを塾に通わせています。", en:"private tutoring school" },
+  { lesson:"33", word:"親", reading:"おや", romaji:"", illus:"none", emoji:"", example:"{親}に感謝の気持ちを伝えます。", plain:"親に感謝の気持ちを伝えます。", en:"parents" },
+  { lesson:"33", word:"体育大学", reading:"たいいくだいがく", romaji:"", illus:"none", emoji:"", example:"{体育大学}でスポーツを専門に勉強します。", plain:"体育大学でスポーツを専門に勉強します。", en:"sport science university" },
+  { lesson:"33", word:"推薦する", reading:"すいせんする", romaji:"", illus:"none", emoji:"", example:"先生がその学校を{推薦してくれました}。", plain:"先生がその学校を推薦してくれました。", en:"recommend" },
+  { lesson:"33", word:"（ご）活躍する", reading:"ごかつやくする", romaji:"", illus:"none", emoji:"", example:"卒業後もぜひ{ご活躍ください}。", plain:"卒業後もぜひご活躍ください。", en:"be active" },
+  { lesson:"33", word:"入学する", reading:"にゅうがくする", romaji:"", illus:"none", emoji:"", example:"来年、大学に{入学します}。", plain:"来年、大学に入学します。", en:"enroll, start school" },
+  { lesson:"33", word:"体育", reading:"たいいく", romaji:"", illus:"none", emoji:"", example:"{体育}の授業では水泳をします。", plain:"体育の授業では水泳をします。", en:"physical education" },
+  { lesson:"33", word:"考え", reading:"かんがえ", romaji:"", illus:"none", emoji:"", example:"あなたの{考え}を聞かせてください。", plain:"あなたの考えを聞かせてください。", en:"a thought" },
+  { lesson:"33", word:"変わる", reading:"かわる", romaji:"", illus:"none", emoji:"", example:"季節が{変わって}、涼しくなりました。", plain:"季節が変わって、涼しくなりました。", en:"change" },
+  { lesson:"33", word:"反対する", reading:"はんたいする", romaji:"", illus:"none", emoji:"", example:"その計画に{反対する}人がいます。", plain:"その計画に反対する人がいます。", en:"oppose" },
+  { lesson:"34", word:"招待する", reading:"しょうたいする", romaji:"", illus:"none", emoji:"", example:"友だちをパーティーに{招待しました}。", plain:"友だちをパーティーに招待しました。", en:"invite" },
+  { lesson:"34", word:"体育系", reading:"たいいくけい", romaji:"", illus:"none", emoji:"", example:"{体育系}のクラブは毎日練習があります。", plain:"体育系のクラブは毎日練習があります。", en:"having to do with physical education /" },
+  { lesson:"34", word:"新入生", reading:"しんにゅうせい", romaji:"", illus:"none", emoji:"", example:"今年の{新入生}は元気がいいです。", plain:"今年の新入生は元気がいいです。", en:"new student" },
+  { lesson:"34", word:"違う", reading:"ちがう", romaji:"", illus:"none", emoji:"", example:"この2つの言葉は意味が{違います}。", plain:"この2つの言葉は意味が違います。", en:"be different" },
+  { lesson:"34", word:"残業する", reading:"ざんぎょうする", romaji:"", illus:"none", emoji:"", example:"今日は{残業して}、10時に帰りました。", plain:"今日は残業して、10時に帰りました。", en:"work overtime" },
+  { lesson:"34", word:"走る", reading:"はしる", romaji:"", illus:"none", emoji:"", example:"毎朝公園を{走っています}。", plain:"毎朝公園を走っています。", en:"run" },
+  { lesson:"34", word:"高速バス", reading:"こうそくバス", romaji:"", illus:"none", emoji:"", example:"{高速バス}で3時間で着きます。", plain:"高速バスで3時間で着きます。", en:"highway express bus" },
+  { lesson:"34", word:"紅葉", reading:"こうよう", romaji:"", illus:"emoji", emoji:"🍁", example:"秋の{紅葉}を見に山へ行きました。", plain:"秋の紅葉を見に山へ行きました。", en:"autumn foliage" },
+  { lesson:"34", word:"（お）寺", reading:"おてら", romaji:"", illus:"none", emoji:"", example:"奈良には古い{お寺}がたくさんあります。", plain:"奈良には古いお寺がたくさんあります。", en:"temple" },
+  { lesson:"34", word:"自然", reading:"しぜん", romaji:"", illus:"none", emoji:"", example:"田舎の{自然}の中でゆっくりしたいです。", plain:"田舎の自然の中でゆっくりしたいです。", en:"nature" },
+  { lesson:"34", word:"島", reading:"しま", romaji:"", illus:"none", emoji:"", example:"沖縄の{島}はとてもきれいです。", plain:"沖縄の島はとてもきれいです。", en:"island" },
+  { lesson:"34", word:"合格", reading:"ごうかく", romaji:"", illus:"none", emoji:"", example:"試験に{合格しました}。うれしいです。", plain:"試験に合格しました。うれしいです。", en:"pass (an exam)" },
+  { lesson:"34", word:"祝う", reading:"いわう", romaji:"", illus:"none", emoji:"", example:"友だちの誕生日を{祝いました}。", plain:"友だちの誕生日を祝いました。", en:"celebrate" },
+  { lesson:"34", word:"乾杯", reading:"かんぱい", romaji:"", illus:"emoji", emoji:"🥂", example:"全員でビールで{乾杯しました}。", plain:"全員でビールで乾杯しました。", en:"cheers" },
+  { lesson:"34", word:"乾杯（を）する", reading:"かんぱいをする", romaji:"", illus:"none", emoji:"", example:"みんなで{乾杯をして}、パーティーが始まりました。", plain:"みんなで乾杯をして、パーティーが始まりました。", en:"make a toast" },
+  { lesson:"34", word:"報告", reading:"ほうこく", romaji:"", illus:"none", emoji:"", example:"仕事の結果を先生に{報告しました}。", plain:"仕事の結果を先生に報告しました。", en:"a report" },
+  { lesson:"34", word:"婚約する", reading:"こんやくする", romaji:"", illus:"none", emoji:"", example:"彼女と{婚約しました}。", plain:"彼女と婚約しました。", en:"get engaged" },
+  { lesson:"34", word:"もちろん", reading:"もちろん", romaji:"", illus:"none", emoji:"", example:"{もちろん}、行きます。楽しみにしています。", plain:"もちろん、行きます。楽しみにしています。", en:"of course" }
+];
+
+let order = [...Array(vocab.length).keys()];
+let currentIdx = 0;
+let autoTimer = null;
+let seenSet = new Set();
+let currentMode = 'study';
+let answered = false;
+let scores = { correct: 0, wrong: 0 };
+let judgeMap = {};
+let currentLesson = 'all'; // 'all' or lesson number
+
+// 課一覧を自動生成
+
+let showEn = false;
+function toggleEn() {
+  showEn = !showEn;
+  const btn = document.getElementById('enToggle');
+  btn.classList.toggle('active', showEn);
+  btn.textContent = showEn ? '🌐 英訳を隠す' : '🌐 英訳を表示する';
+  document.getElementById('wordEn').className = 'word-en' + (showEn ? ' visible' : '');
+}
+function buildLessonBtns() {
+  const lessons = [...new Set(vocab.map(v => v.lesson))].sort((a,b) => {
+    const [aMain, aSub] = String(a).split('-').map(Number);
+    const [bMain, bSub] = String(b).split('-').map(Number);
+    return aMain !== bMain ? aMain - bMain : (aSub||0) - (bSub||0);
+  });
+  const container = document.getElementById('lessonBtns');
+  container.innerHTML = '';
+  // 全課ボタン
+  const allBtn = document.createElement('button');
+  allBtn.className = 'lesson-btn all active';
+  allBtn.textContent = '全課';
+  allBtn.onclick = () => selectLesson('all');
+  container.appendChild(allBtn);
+  // 各課ボタン
+  lessons.forEach(l => {
+    const btn = document.createElement('button');
+    btn.className = 'lesson-btn';
+    btn.id = `lessonBtn_${l}`;
+    const count = vocab.filter(v => v.lesson === l).length;
+    btn.textContent = `第${l}課 (${count}語)`;
+    btn.onclick = () => selectLesson(l);
+    container.appendChild(btn);
+  });
+}
+
+function selectLesson(lesson) {
+  currentLesson = lesson;
+  // ボタンのactive更新
+  document.querySelectorAll('.lesson-btn').forEach(b => b.classList.remove('active'));
+  const target = lesson === 'all'
+    ? document.querySelector('.lesson-btn.all')
+    : document.getElementById(`lessonBtn_${lesson}`);
+  if (target) target.classList.add('active');
+  // フィルター適用してリセット
+  applyLessonFilter();
+}
+
+function getFilteredIndices() {
+  if (currentLesson === 'all') return [...Array(vocab.length).keys()];
+  return vocab.map((v,i) => v.lesson === currentLesson ? i : -1).filter(i => i !== -1);
+}
+
+function applyLessonFilter() {
+  const indices = getFilteredIndices();
+  order = [...indices];
+  currentIdx = 0;
+  seenSet.clear();
+  judgeMap = {};
+  scores = { correct: 0, wrong: 0 };
+  updateScoreBar();
+  // カウンター更新
+  document.getElementById('scoreRemain').textContent = order.length;
+  showCard(0);
+}
+
+function setMode(mode) {
+  currentMode = mode;
+  document.body.classList.toggle('test-mode', mode === 'test');
+  document.getElementById('btnStudy').className = 'mode-btn' + (mode === 'study' ? ' active-study' : '');
+  document.getElementById('btnTest').className  = 'mode-btn' + (mode === 'test'  ? ' active-test'  : '');
+  document.getElementById('btnPrint').className = 'mode-btn' + (mode === 'print' ? ' active-print' : '');
+
+  document.getElementById('printPanel').classList.toggle('open', mode === 'print');
+  document.getElementById('cardArea').style.display   = mode === 'print' ? 'none' : '';
+  document.getElementById('controls').style.display   = mode === 'print' ? 'none' : '';
+  const titles = { study: '単語カード ／ 初中級（9〜34課）', test: '✏️ テスト ／ 初中級（9〜34課）', print: '🖨️ 印刷ワークシート' };
+  document.getElementById('pageTitle').textContent = titles[mode];
+  if (mode === 'test') { scores = { correct:0, wrong:0 }; judgeMap = {}; updateScoreBar(); }
+  if (autoTimer) { clearInterval(autoTimer); autoTimer = null; document.getElementById('autoBtn').classList.remove('active'); document.getElementById('autoBtn').textContent = '▶ 自動再生'; }
+  showCard(currentIdx);
+}
+
+function fmtEx(template, isTest, revealed, cls='blank') {
+  if (!isTest) return template.replace(/\{([^}]+)\}/g, '<mark>$1</mark>');
+  if (revealed) return template.replace(/\{([^}]+)\}/g, `<span class="${cls} filled">$1</span>`);
+  return template.replace(/\{([^}]+)\}/g, `<span class="${cls}"></span>`);
+}
+
+function showCard(idx) {
+  const v = vocab[order[idx]];
+  seenSet.add(order[idx]);
+  answered = false;
+  const card = document.getElementById('card');
+  card.style.animation = 'none'; void card.offsetWidth;
+  card.style.animation = 'cardIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)';
+  const isTest = currentMode === 'test';
+
+  document.getElementById('cardNum').textContent = '#' + String(idx+1).padStart(2,'0');
+  document.getElementById('reading').textContent = v.reading;
+  document.getElementById('wordMain').textContent = v.word;
+  document.getElementById('romaji').textContent = v.romaji;
+  document.getElementById('wordEn').textContent = v.en || '';
+  document.getElementById('wordEn').className = 'word-en' + (showEn ? ' visible' : '');
+
+  // イラストタイプ別表示
+  const imgArea = document.getElementById('imageArea');
+  const illus = v.illus || 'emoji';
+  if (illus === 'none') {
+    imgArea.className = 'image-area hidden';
+  } else if (illus === 'image' && v.image) {
+    imgArea.className = 'image-area';
+    imgArea.innerHTML = `<img src="images/${v.image}" alt="${v.word}" onerror="if(this.parentNode){this.onerror=null;this.parentNode.textContent='🖼️';}">`;
+  } else {
+    imgArea.className = 'image-area';
+    imgArea.textContent = v.emoji || '？';
+  }
+
+  // 例文1
+  document.getElementById('exampleJp').innerHTML = fmtEx(v.example, isTest, false, 'blank');
+
+  // 例文2（noneタイプのみ）
+  const ex2block = document.getElementById('example2Block');
+  if (v.example2) {
+    ex2block.className = 'example2-block visible';
+    document.getElementById('exampleJp2').innerHTML = fmtEx(v.example2, isTest, false, 'blank2');
+  } else {
+    ex2block.className = 'example2-block';
+    document.getElementById('exampleJp2').innerHTML = '';
+  }
+
+  document.getElementById('wordBlock').className = 'word-block ' + (isTest ? 'hidden' : 'revealed');
+  const hintBtn = document.getElementById('hintBtn');
+  hintBtn.textContent = '👁 答えを確認する'; hintBtn.classList.remove('revealed');
+  document.getElementById('judgeCorrect').classList.remove('enabled');
+  document.getElementById('judgeWrong').classList.remove('enabled');
+  document.getElementById('counter').textContent = `${idx+1} / ${order.length}`;
+  document.getElementById('progress').style.width = `${((idx+1)/order.length)*100}%`;
+  document.getElementById('speakBtn').classList.remove('playing');
+  // 語群モード
+  if (currentMode === 'test') {
+    buildWordGroup(order[idx]);
+  } else {
+    document.getElementById('wordGroup').innerHTML = '';
+    document.getElementById('wgResult').textContent = '　';
+  }
+  updateWordList();
+}
+
+function revealAnswer() {
+  if (answered) return;
+  answered = true;
+  const v = vocab[order[currentIdx]];
+  document.getElementById('wordBlock').className = 'word-block revealed';
+  document.getElementById('exampleJp').innerHTML = fmtEx(v.example, true, true, 'blank');
+  if (v.example2) {
+    document.getElementById('exampleJp2').innerHTML = fmtEx(v.example2, true, true, 'blank2');
+  }
+  const hintBtn = document.getElementById('hintBtn');
+  hintBtn.textContent = '✓ 答えを確認しました'; hintBtn.classList.add('revealed');
+  document.getElementById('judgeCorrect').classList.add('enabled');
+  document.getElementById('judgeWrong').classList.add('enabled');
+}
+
+function judge(correct) {
+  if (!answered) { revealAnswer(); return; }
+  const ri = order[currentIdx];
+  const was = ri in judgeMap, prev = judgeMap[ri];
+  judgeMap[ri] = correct;
+  if (!was) { if (correct) scores.correct++; else scores.wrong++; }
+  else if (prev !== correct) { if (correct) { scores.correct++; scores.wrong = Math.max(0, scores.wrong-1); } else { scores.wrong++; scores.correct = Math.max(0, scores.correct-1); } }
+  updateScoreBar(); updateWordList();
+  setTimeout(nextCard, 350);
+}
+
+function updateScoreBar() {
+  document.getElementById('scoreCorrect').textContent = scores.correct;
+  document.getElementById('scoreWrong').textContent = scores.wrong;
+  document.getElementById('scoreRemain').textContent = order.length - scores.correct - scores.wrong;
+}
+
+function nextCard() { currentIdx = (currentIdx < order.length-1) ? currentIdx+1 : 0; showCard(currentIdx); }
+function prevCard() { currentIdx = (currentIdx > 0) ? currentIdx-1 : order.length-1; showCard(currentIdx); }
+
+function shuffleCards() {
+  const indices = getFilteredIndices();
+  for (let i = indices.length-1; i > 0; i--) { const j = Math.floor(Math.random()*(i+1)); [indices[i],indices[j]]=[indices[j],indices[i]]; }
+  order = indices;
+  currentIdx = 0; seenSet.clear(); judgeMap = {}; scores = {correct:0,wrong:0};
+  updateScoreBar(); showCard(0);
+}
+
+function speakExample() {
+  const v = vocab[order[currentIdx]], btn = document.getElementById('speakBtn');
+  // VOICEVOXの音声ファイルを優先、なければブラウザTTSにフォールバック
+  const filename = `audio/${v.lesson}_${v.word}_ex.wav`;
+  const audio = new Audio(filename);
+  audio.oncanplaythrough = () => {
+    btn.classList.add('playing');
+    audio.play();
+    audio.onended = () => btn.classList.remove('playing');
+  };
+  audio.onerror = () => {
+    // 音声ファイルがない場合はブラウザTTSで代替
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+      const u = new SpeechSynthesisUtterance(v.plain);
+      u.lang = 'ja-JP'; u.rate = 0.85;
+      btn.classList.add('playing'); u.onend = () => btn.classList.remove('playing');
+      window.speechSynthesis.speak(u);
+    }
+  };
+  audio.load();
+}
+
+function toggleAuto() {
+  const btn = document.getElementById('autoBtn');
+  if (autoTimer) { clearInterval(autoTimer); autoTimer = null; btn.classList.remove('active'); btn.textContent = '▶ 自動再生'; }
+  else { btn.classList.add('active'); btn.textContent = '⏸ 停止'; speakExample(); autoTimer = setInterval(() => { nextCard(); setTimeout(speakExample, 600); }, 7000); }
+}
+
+function toggleList() { document.getElementById('wordList').classList.toggle('open'); updateWordList(); }
+
+
+function buildWordGroup(vocabIdx) {
+  const v = vocab[vocabIdx];
+  const lessonWords = vocab
+    .map((w, i) => ({ w, i }))
+    .filter(({ w }) => w.lesson === v.lesson && w.word !== v.word)
+    .map(({ w }) => w.word);
+
+  // シャッフルして最大7個＋正解で8択
+  for (let i = lessonWords.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [lessonWords[i], lessonWords[j]] = [lessonWords[j], lessonWords[i]];
+  }
+  const choices = [v.word, ...lessonWords.slice(0, 7)];
+  for (let i = choices.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [choices[i], choices[j]] = [choices[j], choices[i]];
+  }
+
+  const group = document.getElementById('wordGroup');
+  const result = document.getElementById('wgResult');
+  result.textContent = '　';
+  group.innerHTML = '';
+
+  choices.forEach(word => {
+    const btn = document.createElement('button');
+    btn.className = 'wg-btn';
+    btn.dataset.word = word;  // 判定用に単語を保存
+    // 単語（よみ）の形で表示
+    const wordEntry = vocab.find(v => v.word === word);
+    const label = wordEntry && wordEntry.reading ? `${word}（${wordEntry.reading}）` : word;
+    btn.textContent = label;
+    // ボタンは最初から有効
+    btn.onclick = () => {
+      if (btn.disabled) return;
+      const correct = word === v.word;
+      group.querySelectorAll('.wg-btn').forEach(b => b.disabled = true);
+      if (correct) {
+        btn.classList.add('correct-ans');
+        result.style.color = 'var(--accent2)';
+        result.textContent = '⭕ 正解！';
+        // 単語・読みを表示して答えを確認できるようにする
+        document.getElementById('wordBlock').className = 'word-block revealed';
+        document.getElementById('exampleJp').innerHTML = fmtEx(v.example, true, true, 'blank');
+        if (v.example2) document.getElementById('exampleJp2').innerHTML = fmtEx(v.example2, true, true, 'blank2');
+        setTimeout(nextCard, 1200);
+      } else {
+        btn.classList.add('wrong-ans');
+        result.style.color = 'var(--test-accent)';
+        result.textContent = '✗ もう一度考えてみよう';
+        // 正解を光らせる（data-wordで判定）
+        group.querySelectorAll('.wg-btn').forEach(b => {
+          if (b.dataset.word === v.word) b.classList.add('correct-ans');
+          else b.disabled = true;
+          b.disabled = false;
+        });
+        setTimeout(() => {
+          group.querySelectorAll('.wg-btn').forEach(b => b.disabled = false);
+        }, 800);
+      }
+    };
+    group.appendChild(btn);
+  });
+}
+
+function updateWordList() {
+  const list = document.getElementById('wordList');
+  list.innerHTML = '';
+  vocab.forEach((v, i) => {
+    const chip = document.createElement('div');
+    let cls = 'word-chip';
+    if (i in judgeMap) cls += judgeMap[i] ? ' correct' : ' wrong';
+    else if (seenSet.has(i)) cls += ' seen';
+    chip.className = cls;
+    chip.textContent = v.word + '　' + v.reading;
+    chip.onclick = () => { let ci = order.indexOf(i); if (ci===-1){order.unshift(i);ci=0;} currentIdx=ci; showCard(currentIdx); };
+    list.appendChild(chip);
+  });
+}
+
+function printSheet() {
+  const showEmoji   = document.getElementById('optEmoji').checked;
+  const showReading = document.getElementById('optReading').checked;
+  const showExample = document.getElementById('optExample').checked;
+  const showWrite   = document.getElementById('optWriteCol').checked;
+  const showWordGroup = document.getElementById('optWordGroup').checked;
+
+  const targetVocab = getFilteredIndices().map(i => vocab[i]);
+  const lessonLabel = currentLesson === 'all' ? '全課' : `第${currentLesson}課`;
+  const perPage = 10;  // 10問単位に変更
+
+  const blank = txt => txt.replace(/\{([^}]+)\}/g,
+    '<span style="display:inline-block;min-width:80px;border-bottom:1.5px solid #333;margin:0 2px;vertical-align:bottom;">&nbsp;</span>');
+
+  // 10問ずつページ分割
+  let pages = '';
+  for (let p = 0; p < targetVocab.length; p += perPage) {
+    const chunk = targetVocab.slice(p, p + perPage);
+    const pageNum = Math.floor(p / perPage) + 1;
+    const totalPages = Math.ceil(targetVocab.length / perPage);
+
+    let rows = '';
+    chunk.forEach((v, i) => {
+      const num = p + i + 1;
+      // イラスト：showEmojiがtrueのときのみ表示
+      const illustContent = showEmoji
+        ? (v.illus === 'image' && v.image
+          ? `<img src="images/${v.image}" style="width:48px;height:48px;object-fit:contain;">`
+          : (v.illus === 'emoji' ? `<span style="font-size:28px;">${v.emoji}</span>` : ''))
+        : '';
+      const illustCell = showEmoji
+        ? `<td style="text-align:center;padding:4px;border:1px solid #ddd;width:56px;">${illustContent}</td>`
+        : '';
+      const ex2line   = v.example2 ? `<div style="margin-top:5px;">${blank(v.example2)}</div>` : '';
+      const readLine  = showReading ? `<div style="font-size:10px;color:#888;margin-top:2px;">${v.reading}</div>` : '';
+      const exCell    = showExample
+        ? `<td style="padding:7px 10px;font-size:13px;line-height:1.9;border:1px solid #ddd;">${blank(v.example)}${ex2line}${readLine}</td>` : '';
+      const writeCell = showWrite
+        ? `<td style="padding:7px;min-width:90px;border:1px solid #ddd;"></td>` : '';
+      const bg = i % 2 === 1 ? '#f7f9fb' : '#ffffff';
+      rows += `<tr style="background:${bg};">
+        <td style="text-align:center;font-size:11px;padding:7px;border:1px solid #ddd;width:30px;color:#111;">${num}</td>
+        ${illustCell}${exCell}${writeCell}
+      </tr>`;
+    });
+
+    const illustTh = showEmoji ? `<th style="width:56px;padding:7px;background:#1a2633;color:white;border:1px solid #999;font-size:11px;">絵</th>` : '';
+    const exTh    = showExample? `<th style="padding:7px;background:#1a2633;color:white;border:1px solid #999;font-size:11px;">例　文</th>` : '';
+    const writeTh = showWrite  ? `<th style="min-width:90px;padding:7px;background:#1a2633;color:white;border:1px solid #999;font-size:11px;">書いてみよう</th>` : '';
+
+    // 語群：単語（読み）形式、ランダム並び
+    const wordGroupHtml = showWordGroup ? `
+      <div style="margin-top:12px;padding:10px 16px;border:1px solid #ccc;border-radius:8px;background:#f8f9fa;">
+        <span style="font-size:12px;font-weight:bold;color:#1a2633;margin-right:12px;">【語　群】</span>
+        ${[...chunk].sort(()=>Math.random()-0.5).map(v => {
+          const label = v.reading ? `${v.word}（${v.reading}）` : v.word;
+          return `<span style="display:inline-block;border:1px solid #aaa;border-radius:5px;padding:3px 10px;font-size:12px;background:white;margin:2px;color:#111;">${label}</span>`;
+        }).join('')}
+      </div>` : '';
+
+    const isLast = (p + perPage) >= targetVocab.length;
+    pages += `
+    <div style="${isLast ? '' : 'page-break-after:always;'}">
+      <h2 style="font-size:16px;margin:0 0 5px;color:#111;">単語テスト　${lessonLabel}${totalPages > 1 ? `　(${pageNum}/${totalPages})` : ''}</h2>
+      <div style="font-size:12px;color:#555;margin-bottom:14px;line-height:2.4;background:white;">
+        名前：＿＿＿＿＿＿＿＿＿＿＿　日付：＿＿＿＿月＿＿＿日　点数：＿＿＿／${chunk.length}
+      </div>
+      <table style="width:100%;border-collapse:collapse;">
+        <tr>
+          <th style="width:30px;padding:7px;background:#1a2633;color:white;border:1px solid #999;font-size:11px;">No.</th>
+          ${illustTh}${exTh}${writeTh}
+        </tr>
+        ${rows}
+      </table>
+      ${wordGroupHtml}
+    </div>`;
+  }
+
+
+
+  // iframeでCSSを完全分離して表示
+  const overlay = document.getElementById('printOverlay');
+  const iframeHTML = `<!DOCTYPE html><html lang="ja"><head>
+<meta charset="UTF-8">
+<style>
+  *{box-sizing:border-box;}
+  body{font-family:sans-serif;padding:20px;color:#111;background:white;margin:0;}
+  h2{font-size:16px;margin:0 0 5px;color:#111;}
+  .meta{font-size:12px;color:#555;margin-bottom:14px;line-height:2.4;}
+  table{width:100%;border-collapse:collapse;}
+  th{background:#1a2633;color:white;padding:7px;border:1px solid #999;font-size:11px;text-align:left;}
+  td{padding:7px 10px;border:1px solid #ddd;font-size:13px;color:#111;vertical-align:middle;}
+  tr:nth-child(even) td{background:#f7f9fb;}
+  .wordgroup{margin-top:16px;padding:12px 16px;border:1px solid #ccc;border-radius:8px;background:#f8f9fa;}
+  .wordgroup-label{font-size:12px;font-weight:bold;color:#1a2633;margin-right:12px;}
+  .wordgroup-item{display:inline-block;border:1px solid #aaa;border-radius:5px;padding:3px 10px;font-size:13px;background:white;margin:2px;color:#111;}
+  .topbar{margin-bottom:16px;display:flex;gap:10px;}
+  .btn{padding:10px 20px;border:none;border-radius:8px;font-size:14px;font-weight:bold;cursor:pointer;}
+  .btn-print{background:#1a2633;color:white;}
+  .btn-back{background:#eee;color:#333;}
+  .page{margin-bottom:32px;}
+  @media print{.topbar{display:none!important;}}
+</style>
+</head><body>
+<div class="topbar">
+  <button class="btn btn-print" onclick="window.print()">🖨️ 印刷 / PDFで保存</button>
+  <button class="btn btn-back" onclick="parent.document.getElementById('printOverlay').style.display='none'">← 戻る</button>
+</div>
+${pages}
+</body></html>`;
+
+  overlay.innerHTML = '<iframe id="printFrame" style="position:fixed;top:0;left:0;width:100%;height:100%;border:none;z-index:9999;background:white;"></iframe>';
+  overlay.style.display = 'block';
+  const iframe = document.getElementById('printFrame');
+  iframe.onload = () => {};
+  iframe.srcdoc = iframeHTML;
+}
+
+buildLessonBtns();
+showCard(0);
+</script>
+</body>
+</html>
