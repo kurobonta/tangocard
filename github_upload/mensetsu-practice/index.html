@@ -1,0 +1,733 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>専門学校面接 練習ツール</title>
+  <style>
+    :root {
+      --bg: #f5f2ec;
+      --panel: #ffffff;
+      --text: #24302f;
+      --muted: #66716f;
+      --line: #d8d1c7;
+      --main: #2d6f73;
+      --main-dark: #21575a;
+      --soft: #e8f2ef;
+      --accent: #8a5a2b;
+      --shadow: 0 10px 26px rgba(38, 50, 48, 0.09);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      color: var(--text);
+      background: var(--bg);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Yu Gothic", "Meiryo", sans-serif;
+      line-height: 1.7;
+    }
+
+    .app {
+      width: min(100%, 880px);
+      margin: 0 auto;
+      padding: 20px 14px 32px;
+    }
+
+    header {
+      padding: 10px 2px 18px;
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-size: clamp(1.55rem, 6vw, 2.2rem);
+      line-height: 1.25;
+      letter-spacing: 0;
+    }
+
+    .lead {
+      margin: 0;
+      color: var(--muted);
+      font-size: 1rem;
+    }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+    }
+
+    .controls {
+      display: grid;
+      gap: 14px;
+      padding: 16px;
+    }
+
+    .field {
+      display: grid;
+      gap: 7px;
+    }
+
+    label,
+    .group-label {
+      color: var(--muted);
+      font-size: 0.92rem;
+      font-weight: 700;
+    }
+
+    select {
+      width: 100%;
+      min-height: 48px;
+      padding: 10px 12px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      color: var(--text);
+      font-size: 1.05rem;
+    }
+
+    .segmented {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .segmented input {
+      position: absolute;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .segmented span {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 48px;
+      padding: 8px 10px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      color: var(--text);
+      font-weight: 700;
+      text-align: center;
+    }
+
+    .segmented input:checked + span {
+      border-color: var(--main);
+      background: var(--soft);
+      color: var(--main-dark);
+    }
+
+    .actions {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+      padding: 16px;
+      border-top: 1px solid var(--line);
+    }
+
+    button {
+      min-height: 52px;
+      border: 0;
+      border-radius: 8px;
+      padding: 12px 16px;
+      font-size: 1.05rem;
+      font-weight: 800;
+      color: #fff;
+      background: var(--main);
+      cursor: pointer;
+      touch-action: manipulation;
+    }
+
+    button:active {
+      transform: translateY(1px);
+    }
+
+    button.secondary {
+      color: var(--main-dark);
+      background: var(--soft);
+      border: 1px solid #b8d4ce;
+    }
+
+    button.ghost {
+      color: var(--text);
+      background: #fff;
+      border: 1px solid var(--line);
+    }
+
+    .question-area {
+      margin-top: 16px;
+      padding: 18px;
+    }
+
+    .meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      min-height: 30px;
+      padding: 2px 10px;
+      border-radius: 999px;
+      color: var(--main-dark);
+      background: var(--soft);
+      font-size: 0.88rem;
+      font-weight: 800;
+    }
+
+    .count {
+      color: var(--muted);
+      background: #f3f0ea;
+    }
+
+    .question {
+      margin: 0;
+      font-size: clamp(1.45rem, 6vw, 2rem);
+      font-weight: 850;
+      line-height: 1.65;
+    }
+
+    rt {
+      font-size: 0.46em;
+      color: var(--accent);
+      font-weight: 600;
+    }
+
+    .hint {
+      display: none;
+      margin-top: 16px;
+      padding: 16px;
+      border-left: 5px solid var(--main);
+      border-radius: 8px;
+      background: #fbfaf7;
+      font-size: 1.08rem;
+    }
+
+    .hint.show {
+      display: block;
+    }
+
+    .hint h2 {
+      margin: 0 0 8px;
+      font-size: 1.08rem;
+    }
+
+    .hint ul {
+      margin: 8px 0;
+      padding-left: 1.2em;
+    }
+
+    .hint p {
+      margin: 8px 0 0;
+    }
+
+    .empty {
+      color: var(--muted);
+      font-size: 1.1rem;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .notice {
+      margin-top: 12px;
+      color: var(--muted);
+      font-size: 0.93rem;
+    }
+
+    @media (min-width: 680px) {
+      .controls {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .field.wide {
+        grid-column: 1 / -1;
+      }
+
+      .actions {
+        grid-template-columns: 1.3fr 1fr 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header>
+      <h1><ruby>専門学校<rt>せんもんがっこう</rt></ruby><ruby>進学<rt>しんがく</rt></ruby><ruby>面接<rt>めんせつ</rt></ruby> <ruby>練習<rt>れんしゅう</rt></ruby>ツール</h1>
+      <p class="lead">A2〜B1レベルの学生が、質問を見て、聞いて、自分で答える練習ができます。</p>
+    </header>
+
+    <section class="panel" aria-label="練習設定">
+      <div class="controls">
+        <div class="field">
+          <span class="group-label">レベル</span>
+          <div class="segmented" role="radiogroup" aria-label="レベル">
+            <label><input type="radio" name="level" value="A2" checked><span>A2</span></label>
+            <label><input type="radio" name="level" value="B1"><span>B1</span></label>
+          </div>
+        </div>
+
+        <div class="field">
+          <span class="group-label">質問タイプ</span>
+          <div class="segmented" role="radiogroup" aria-label="質問タイプ">
+            <label><input type="radio" name="type" value="common" checked><span>共通質問</span></label>
+            <label><input type="radio" name="type" value="major"><span>専門分野別質問</span></label>
+          </div>
+        </div>
+
+        <div class="field" id="categoryField">
+          <label for="categorySelect">カテゴリ</label>
+          <select id="categorySelect">
+            <option value="自己紹介">自己紹介</option>
+            <option value="志望理由">志望理由</option>
+            <option value="日本語の勉強">日本語の勉強</option>
+            <option value="将来">将来</option>
+            <option value="生活・お金">生活・お金</option>
+          </select>
+        </div>
+
+        <div class="field hidden" id="majorField">
+          <label for="majorSelect">専門分野</label>
+          <select id="majorSelect">
+            <option value="介護">介護</option>
+            <option value="自動車整備">自動車整備</option>
+            <option value="IT">IT</option>
+            <option value="観光">観光</option>
+            <option value="ビジネス">ビジネス</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <span class="group-label">出題モード</span>
+          <div class="segmented" role="radiogroup" aria-label="出題モード">
+            <label><input type="radio" name="mode" value="order" checked><span>順番</span></label>
+            <label><input type="radio" name="mode" value="random"><span>ランダム</span></label>
+          </div>
+        </div>
+
+        <div class="field">
+          <span class="group-label">読み上げ速度</span>
+          <div class="segmented" role="radiogroup" aria-label="読み上げ速度">
+            <label><input type="radio" name="speed" value="slow"><span>ゆっくり</span></label>
+            <label><input type="radio" name="speed" value="normal" checked><span>ふつう</span></label>
+          </div>
+        </div>
+
+        <div class="field wide">
+          <label for="voiceSelect">音声</label>
+          <select id="voiceSelect">
+            <option value="">日本語の音声を自動で選ぶ</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button type="button" id="nextBtn">次の質問</button>
+        <button type="button" class="secondary" id="hintBtn">ヒントを見る</button>
+        <button type="button" class="ghost" id="speakBtn">音声を聞く</button>
+      </div>
+    </section>
+
+    <section class="panel question-area" aria-live="polite">
+      <div id="questionBox">
+        <p class="empty">「次の質問」を押してください。</p>
+      </div>
+      <div class="notice">音声は、iPhoneでも使いやすいように、ボタンを押したときだけ流れます。</div>
+    </section>
+  </main>
+
+  <script>
+    const commonQuestions = [
+      { level: "A2", category: "自己紹介", text: "自己紹介をしてください。", html: "<ruby>自己紹介<rt>じこしょうかい</rt></ruby>をしてください。", hint: hint(["名前・国", "好きなこと", "今していること"], ["私は〇〇から来ました。", "趣味は〇〇です。", "今、日本語を勉強しています。"], "私はベトナムから来ました。料理をすることが好きです。") },
+      { level: "A2", category: "自己紹介", text: "あなたの国について、少し話してください。", html: "あなたの<ruby>国<rt>くに</rt></ruby>について、<ruby>少<rt>すこ</rt></ruby>し<ruby>話<rt>はな</rt></ruby>してください。", hint: hint(["国の場所", "有名なもの", "好きなところ"], ["私の国は〇〇にあります。", "〇〇が有名です。", "私は〇〇が好きです。"], "私の国は食べ物がおいしいです。") },
+      { level: "A2", category: "自己紹介", text: "あなたの長所は何ですか。", html: "あなたの<ruby>長所<rt>ちょうしょ</rt></ruby>は<ruby>何<rt>なん</rt></ruby>ですか。", hint: hint(["よいところ", "理由", "例"], ["私の長所は〇〇です。", "なぜなら、〇〇からです。", "たとえば、〇〇です。"], "私の長所はまじめなところです。毎日、宿題をします。") },
+      { level: "A2", category: "自己紹介", text: "休みの日は何をしますか。", html: "<ruby>休<rt>やす</rt></ruby>みの<ruby>日<rt>ひ</rt></ruby>は<ruby>何<rt>なに</rt></ruby>をしますか。", hint: hint(["よくすること", "だれと", "どう感じるか"], ["休みの日は〇〇します。", "友だちと〇〇します。", "とても楽しいです。"], "休みの日は友だちと買い物に行きます。") },
+      { level: "A2", category: "自己紹介", text: "日本に来てから、何が変わりましたか。", html: "<ruby>日本<rt>にほん</rt></ruby>に<ruby>来<rt>き</rt></ruby>てから、<ruby>何<rt>なに</rt></ruby>が<ruby>変<rt>か</rt></ruby>わりましたか。", hint: hint(["前の生活", "今の生活", "よかったこと"], ["前は〇〇でした。", "今は〇〇しています。", "少し〇〇になりました。"], "前は一人で料理をしませんでした。今は毎日作ります。") },
+
+      { level: "A2", category: "志望理由", text: "この専門学校を選んだ理由を教えてください。", html: "この<ruby>専門学校<rt>せんもんがっこう</rt></ruby>を<ruby>選<rt>えら</rt></ruby>んだ<ruby>理由<rt>りゆう</rt></ruby>を<ruby>教<rt>おし</rt></ruby>えてください。", hint: hint(["勉強したいこと", "学校のよいところ", "将来"], ["私は〇〇を勉強したいです。", "この学校は〇〇があるので、選びました。", "将来、〇〇として働きたいです。"], "この学校は実習が多いので、選びました。") },
+      { level: "A2", category: "志望理由", text: "専門学校で何を勉強したいですか。", html: "<ruby>専門学校<rt>せんもんがっこう</rt></ruby>で<ruby>何<rt>なに</rt></ruby>を<ruby>勉強<rt>べんきょう</rt></ruby>したいですか。", hint: hint(["勉強したい科目", "理由", "がんばりたいこと"], ["〇〇を勉強したいです。", "理由は〇〇です。", "特に〇〇をがんばりたいです。"], "介護のことばと実習をがんばりたいです。") },
+      { level: "A2", category: "志望理由", text: "どうして日本で進学したいですか。", html: "どうして<ruby>日本<rt>にほん</rt></ruby>で<ruby>進学<rt>しんがく</rt></ruby>したいですか。", hint: hint(["日本で学びたいこと", "よいと思うこと", "目標"], ["日本で〇〇を学びたいです。", "日本の〇〇はすばらしいと思います。", "将来、〇〇したいです。"], "日本で高い技術を学びたいです。") },
+      { level: "A2", category: "志望理由", text: "オープンキャンパスで何がよかったですか。", html: "オープンキャンパスで<ruby>何<rt>なに</rt></ruby>がよかったですか。", hint: hint(["見たこと", "よかったこと", "気持ち"], ["〇〇を見ました。", "先生が〇〇でした。", "この学校で勉強したいと思いました。"], "先生がやさしく説明してくれたことがよかったです。") },
+      { level: "A2", category: "志望理由", text: "入学したら、どんなことをがんばりたいですか。", html: "<ruby>入学<rt>にゅうがく</rt></ruby>したら、どんなことをがんばりたいですか。", hint: hint(["勉強", "日本語", "生活"], ["入学したら、〇〇をがんばります。", "毎日〇〇します。", "友だちとも協力したいです。"], "入学したら、授業の復習を毎日します。") },
+
+      { level: "A2", category: "日本語の勉強", text: "日本語の勉強で、何が好きですか。", html: "<ruby>日本語<rt>にほんご</rt></ruby>の<ruby>勉強<rt>べんきょう</rt></ruby>で、<ruby>何<rt>なに</rt></ruby>が<ruby>好<rt>す</rt></ruby>きですか。", hint: hint(["好きな勉強", "理由", "例"], ["〇〇が好きです。", "理由は〇〇です。", "たとえば、〇〇です。"], "会話の勉強が好きです。日本人と話せるからです。") },
+      { level: "A2", category: "日本語の勉強", text: "日本語の勉強で、何が難しいですか。", html: "<ruby>日本語<rt>にほんご</rt></ruby>の<ruby>勉強<rt>べんきょう</rt></ruby>で、<ruby>何<rt>なに</rt></ruby>が<ruby>難<rt>むずか</rt></ruby>しいですか。", hint: hint(["難しいこと", "理由", "練習方法"], ["〇〇が難しいです。", "でも、〇〇しています。", "もっと練習したいです。"], "漢字が難しいです。でも、毎日10個覚えています。") },
+      { level: "A2", category: "日本語の勉強", text: "毎日、どのように日本語を勉強していますか。", html: "<ruby>毎日<rt>まいにち</rt></ruby>、どのように<ruby>日本語<rt>にほんご</rt></ruby>を<ruby>勉強<rt>べんきょう</rt></ruby>していますか。", hint: hint(["学校で", "家で", "続けていること"], ["学校で〇〇します。", "家で〇〇を復習します。", "毎日〇〇分勉強します。"], "家で単語を復習して、音読をします。") },
+      { level: "A2", category: "日本語の勉強", text: "日本語を使って、何ができるようになりましたか。", html: "<ruby>日本語<rt>にほんご</rt></ruby>を<ruby>使<rt>つか</rt></ruby>って、<ruby>何<rt>なに</rt></ruby>ができるようになりましたか。", hint: hint(["前できなかったこと", "今できること", "うれしいこと"], ["前は〇〇できませんでした。", "今は〇〇できます。", "とてもうれしいです。"], "前は電話が苦手でした。今は予約ができます。") },
+      { level: "A2", category: "日本語の勉強", text: "専門学校に入るまでに、日本語をどうがんばりますか。", html: "<ruby>専門学校<rt>せんもんがっこう</rt></ruby>に<ruby>入<rt>はい</rt></ruby>るまでに、<ruby>日本語<rt>にほんご</rt></ruby>をどうがんばりますか。", hint: hint(["目標", "方法", "時間"], ["〇〇までに、〇〇したいです。", "毎日〇〇します。", "苦手な〇〇を練習します。"], "入学までに、会話をもっと上手にしたいです。") },
+
+      { level: "A2", category: "将来", text: "将来、どんな仕事をしたいですか。", html: "<ruby>将来<rt>しょうらい</rt></ruby>、どんな<ruby>仕事<rt>しごと</rt></ruby>をしたいですか。", hint: hint(["仕事の名前", "理由", "勉強したいこと"], ["将来、〇〇になりたいです。", "理由は〇〇です。", "そのために〇〇を勉強します。"], "将来、介護職員になりたいです。人を助けたいからです。") },
+      { level: "A2", category: "将来", text: "卒業したら、日本で働きたいですか。", html: "<ruby>卒業<rt>そつぎょう</rt></ruby>したら、<ruby>日本<rt>にほん</rt></ruby>で<ruby>働<rt>はたら</rt></ruby>きたいですか。", hint: hint(["はい・いいえ", "理由", "目標"], ["はい、日本で働きたいです。", "〇〇の仕事をしたいです。", "経験をたくさん作りたいです。"], "はい、日本で働いて、技術を身につけたいです。") },
+      { level: "A2", category: "将来", text: "10年後、どんな人になりたいですか。", html: "10<ruby>年後<rt>ねんご</rt></ruby>、どんな<ruby>人<rt>ひと</rt></ruby>になりたいですか。", hint: hint(["仕事", "性格", "生活"], ["10年後、〇〇になりたいです。", "〇〇な人になりたいです。", "家族を助けたいです。"], "10年後、やさしくて信頼される人になりたいです。") },
+      { level: "A2", category: "将来", text: "あなたの夢は何ですか。", html: "あなたの<ruby>夢<rt>ゆめ</rt></ruby>は<ruby>何<rt>なん</rt></ruby>ですか。", hint: hint(["夢", "理由", "今すること"], ["私の夢は〇〇です。", "〇〇したいからです。", "今、〇〇をがんばっています。"], "私の夢は自分の店を持つことです。") },
+      { level: "A2", category: "将来", text: "夢のために、今何をしていますか。", html: "<ruby>夢<rt>ゆめ</rt></ruby>のために、<ruby>今<rt>いま</rt></ruby><ruby>何<rt>なに</rt></ruby>をしていますか。", hint: hint(["勉強", "生活", "続けていること"], ["夢のために〇〇しています。", "毎日〇〇を続けています。", "これからもがんばります。"], "夢のために日本語と専門の言葉を勉強しています。") },
+
+      { level: "A2", category: "生活・お金", text: "アルバイトで大変なことは何ですか。", html: "アルバイトで<ruby>大変<rt>たいへん</rt></ruby>なことは<ruby>何<rt>なん</rt></ruby>ですか。", hint: hint(["大変なこと", "理由", "どうしているか"], ["〇〇が大変です。", "でも、〇〇しています。", "少しずつ慣れました。"], "忙しい時間が大変です。でも、落ち着いて仕事をします。") },
+      { level: "A2", category: "生活・お金", text: "アルバイトで学んだことは何ですか。", html: "アルバイトで<ruby>学<rt>まな</rt></ruby>んだことは<ruby>何<rt>なん</rt></ruby>ですか。", hint: hint(["学んだこと", "例", "これから"], ["〇〇を学びました。", "たとえば、〇〇です。", "これからも使いたいです。"], "時間を守ることを学びました。") },
+      { level: "A2", category: "生活・お金", text: "勉強とアルバイトを両立するために、何に気をつけていますか。", html: "<ruby>勉強<rt>べんきょう</rt></ruby>とアルバイトを<ruby>両立<rt>りょうりつ</rt></ruby>するために、<ruby>何<rt>なに</rt></ruby>に<ruby>気<rt>き</rt></ruby>をつけていますか。", hint: hint(["時間", "体", "勉強"], ["〇〇に気をつけています。", "早く寝るようにしています。", "宿題を先にします。"], "時間を決めて、宿題を先にするようにしています。") },
+      { level: "A2", category: "生活・お金", text: "山口はどんなところですか。", html: "<ruby>山口<rt>やまぐち</rt></ruby>はどんなところですか。", hint: hint(["町の様子", "よいところ", "自分の気持ち"], ["山口は〇〇ところです。", "〇〇があって、いいです。", "私は〇〇と思います。"], "山口は静かで、自然が多いところです。") },
+      { level: "A2", category: "生活・お金", text: "山口に住んでみて、よかったことは何ですか。", html: "<ruby>山口<rt>やまぐち</rt></ruby>に<ruby>住<rt>す</rt></ruby>んでみて、よかったことは<ruby>何<rt>なん</rt></ruby>ですか。", hint: hint(["よかったこと", "理由", "例"], ["〇〇がよかったです。", "〇〇なので、生活しやすいです。", "たとえば、〇〇です。"], "人が親切なことがよかったです。") },
+
+      { level: "B1", category: "自己紹介", text: "あなたの性格を、例を使って説明してください。", html: "あなたの<ruby>性格<rt>せいかく</rt></ruby>を、<ruby>例<rt>れい</rt></ruby>を<ruby>使<rt>つか</rt></ruby>って<ruby>説明<rt>せつめい</rt></ruby>してください。", hint: hint(["性格", "具体例", "学校生活での生かし方"], ["私は〇〇な性格です。", "たとえば、〇〇したことがあります。", "この性格を〇〇に生かしたいです。"], "私は責任感があります。アルバイトで最後まで確認します。") },
+      { level: "B1", category: "自己紹介", text: "これまで一番がんばったことは何ですか。", html: "これまで<ruby>一番<rt>いちばん</rt></ruby>がんばったことは<ruby>何<rt>なん</rt></ruby>ですか。", hint: hint(["がんばったこと", "大変だった点", "結果"], ["一番がんばったことは〇〇です。", "特に〇〇が大変でした。", "その結果、〇〇できました。"], "日本語能力試験の勉強をがんばりました。") },
+      { level: "B1", category: "自己紹介", text: "あなたの短所と、それを直すためにしていることを話してください。", html: "あなたの<ruby>短所<rt>たんしょ</rt></ruby>と、それを<ruby>直<rt>なお</rt></ruby>すためにしていることを<ruby>話<rt>はな</rt></ruby>してください。", hint: hint(["短所", "困ること", "改善方法"], ["私の短所は〇〇です。", "そのため、〇〇することがあります。", "今は〇〇するようにしています。"], "心配しすぎるところがあります。今は早めに相談します。") },
+      { level: "B1", category: "自己紹介", text: "日本での生活で成長したことは何ですか。", html: "<ruby>日本<rt>にほん</rt></ruby>での<ruby>生活<rt>せいかつ</rt></ruby>で<ruby>成長<rt>せいちょう</rt></ruby>したことは<ruby>何<rt>なん</rt></ruby>ですか。", hint: hint(["前の自分", "今の自分", "理由"], ["以前は〇〇でした。", "今は〇〇できるようになりました。", "日本で〇〇を経験したからです。"], "以前より自分で考えて行動できるようになりました。") },
+      { level: "B1", category: "自己紹介", text: "まわりの人から、どんな人だと言われますか。", html: "まわりの<ruby>人<rt>ひと</rt></ruby>から、どんな<ruby>人<rt>ひと</rt></ruby>だと<ruby>言<rt>い</rt></ruby>われますか。", hint: hint(["言われること", "理由", "面接で伝えたいこと"], ["〇〇な人だと言われます。", "理由は〇〇だと思います。", "学校でも〇〇したいです。"], "まじめな人だと言われます。時間を守るからだと思います。") },
+
+      { level: "B1", category: "志望理由", text: "この学校でなければならない理由は何ですか。", html: "この<ruby>学校<rt>がっこう</rt></ruby>でなければならない<ruby>理由<rt>りゆう</rt></ruby>は<ruby>何<rt>なん</rt></ruby>ですか。", hint: hint(["学校の特徴", "自分の目標との関係", "入学後の計画"], ["この学校には〇〇があります。", "私の目標に合っていると思います。", "入学後は〇〇を深く学びたいです。"], "実習が多く、現場で必要な力を身につけられると思います。") },
+      { level: "B1", category: "志望理由", text: "専門学校で学ぶ内容を、どのくらい調べましたか。", html: "<ruby>専門学校<rt>せんもんがっこう</rt></ruby>で<ruby>学<rt>まな</rt></ruby>ぶ<ruby>内容<rt>ないよう</rt></ruby>を、どのくらい<ruby>調<rt>しら</rt></ruby>べましたか。", hint: hint(["調べた方法", "わかったこと", "興味を持ったこと"], ["ホームページで〇〇を調べました。", "〇〇があるとわかりました。", "特に〇〇に興味があります。"], "カリキュラムを見て、実習が多いことを知りました。") },
+      { level: "B1", category: "志望理由", text: "なぜ大学ではなく、専門学校を選びましたか。", html: "なぜ<ruby>大学<rt>だいがく</rt></ruby>ではなく、<ruby>専門学校<rt>せんもんがっこう</rt></ruby>を<ruby>選<rt>えら</rt></ruby>びましたか。", hint: hint(["学び方", "早く身につけたい力", "将来"], ["専門学校では〇〇を実践的に学べます。", "早く〇〇の力をつけたいです。", "将来は〇〇として働きたいです。"], "実践的に学び、早く現場で働ける力をつけたいです。") },
+      { level: "B1", category: "志望理由", text: "入学後、授業についていくために何をしますか。", html: "<ruby>入学後<rt>にゅうがくご</rt></ruby>、<ruby>授業<rt>じゅぎょう</rt></ruby>についていくために<ruby>何<rt>なに</rt></ruby>をしますか。", hint: hint(["予習・復習", "質問", "時間管理"], ["授業の前に〇〇します。", "わからない時は〇〇します。", "毎日〇〇時間勉強します。"], "復習をその日のうちにして、わからない点は先生に質問します。") },
+      { level: "B1", category: "志望理由", text: "この分野に興味を持ったきっかけを教えてください。", html: "この<ruby>分野<rt>ぶんや</rt></ruby>に<ruby>興味<rt>きょうみ</rt></ruby>を<ruby>持<rt>も</rt></ruby>ったきっかけを<ruby>教<rt>おし</rt></ruby>えてください。", hint: hint(["きっかけ", "その時の気持ち", "今の目標"], ["きっかけは〇〇です。", "その時、〇〇と思いました。", "今は〇〇を目指しています。"], "家族を助けた経験がきっかけで、介護に興味を持ちました。") },
+
+      { level: "B1", category: "日本語の勉強", text: "日本語力を伸ばすために、どんな工夫をしていますか。", html: "<ruby>日本語力<rt>にほんごりょく</rt></ruby>を<ruby>伸<rt>の</rt></ruby>ばすために、どんな<ruby>工夫<rt>くふう</rt></ruby>をしていますか。", hint: hint(["工夫", "続け方", "効果"], ["〇〇するようにしています。", "毎日続けるために〇〇します。", "その結果、〇〇がよくなりました。"], "新しい言葉をメモして、その日のうちに使うようにしています。") },
+      { level: "B1", category: "日本語の勉強", text: "専門学校の授業で日本語が難しい時、どうしますか。", html: "<ruby>専門学校<rt>せんもんがっこう</rt></ruby>の<ruby>授業<rt>じゅぎょう</rt></ruby>で<ruby>日本語<rt>にほんご</rt></ruby>が<ruby>難<rt>むずか</rt></ruby>しい<ruby>時<rt>とき</rt></ruby>、どうしますか。", hint: hint(["まずすること", "だれに聞くか", "復習"], ["まず〇〇を確認します。", "先生や友だちに質問します。", "家で〇〇を復習します。"], "聞き取れなかった言葉をメモして、授業後に質問します。") },
+      { level: "B1", category: "日本語の勉強", text: "日本語で説明する時、何に気をつけていますか。", html: "<ruby>日本語<rt>にほんご</rt></ruby>で<ruby>説明<rt>せつめい</rt></ruby>する<ruby>時<rt>とき</rt></ruby>、<ruby>何<rt>なに</rt></ruby>に<ruby>気<rt>き</rt></ruby>をつけていますか。", hint: hint(["順番", "言葉の選び方", "確認"], ["まず〇〇を言います。", "簡単な言葉で説明します。", "相手がわかったか確認します。"], "結論から話し、難しい言葉は例を使って説明します。") },
+      { level: "B1", category: "日本語の勉強", text: "漢字や専門用語を覚えるために、どう勉強していますか。", html: "<ruby>漢字<rt>かんじ</rt></ruby>や<ruby>専門用語<rt>せんもんようご</rt></ruby>を<ruby>覚<rt>おぼ</rt></ruby>えるために、どう<ruby>勉強<rt>べんきょう</rt></ruby>していますか。", hint: hint(["覚え方", "使い方", "確認"], ["〇〇に書いて覚えます。", "例文を作ります。", "友だちと確認します。"], "単語カードを作り、例文を書いて覚えています。") },
+      { level: "B1", category: "日本語の勉強", text: "面接で緊張した時、日本語で話すためにどうしますか。", html: "<ruby>面接<rt>めんせつ</rt></ruby>で<ruby>緊張<rt>きんちょう</rt></ruby>した<ruby>時<rt>とき</rt></ruby>、<ruby>日本語<rt>にほんご</rt></ruby>で<ruby>話<rt>はな</rt></ruby>すためにどうしますか。", hint: hint(["落ち着く方法", "話す順番", "練習"], ["深呼吸してから話します。", "結論、理由、例の順に話します。", "家で何度も練習します。"], "緊張しても、短い文でゆっくり話します。") },
+
+      { level: "B1", category: "将来", text: "卒業後のキャリアプランを教えてください。", html: "<ruby>卒業後<rt>そつぎょうご</rt></ruby>のキャリアプランを<ruby>教<rt>おし</rt></ruby>えてください。", hint: hint(["卒業直後", "数年後", "長い目標"], ["卒業後は〇〇したいです。", "数年後には〇〇を目指します。", "将来は〇〇になりたいです。"], "卒業後は日本で働き、経験を積んでリーダーを目指したいです。") },
+      { level: "B1", category: "将来", text: "将来の目標のために、専門学校で何を身につけたいですか。", html: "<ruby>将来<rt>しょうらい</rt></ruby>の<ruby>目標<rt>もくひょう</rt></ruby>のために、<ruby>専門学校<rt>せんもんがっこう</rt></ruby>で<ruby>何<rt>なに</rt></ruby>を<ruby>身<rt>み</rt></ruby>につけたいですか。", hint: hint(["知識", "技術", "態度"], ["〇〇の知識を身につけたいです。", "〇〇の技術も学びたいです。", "責任を持って行動したいです。"], "専門知識だけでなく、現場でのコミュニケーション力も身につけたいです。") },
+      { level: "B1", category: "将来", text: "日本で働く時、大切にしたいことは何ですか。", html: "<ruby>日本<rt>にほん</rt></ruby>で<ruby>働<rt>はたら</rt></ruby>く<ruby>時<rt>とき</rt></ruby>、<ruby>大切<rt>たいせつ</rt></ruby>にしたいことは<ruby>何<rt>なん</rt></ruby>ですか。", hint: hint(["大切なこと", "理由", "行動"], ["〇〇を大切にしたいです。", "なぜなら、〇〇だからです。", "そのために〇〇します。"], "報告・連絡・相談を大切にしたいです。") },
+      { level: "B1", category: "将来", text: "あなたの国と日本をつなぐ仕事に興味がありますか。", html: "あなたの<ruby>国<rt>くに</rt></ruby>と<ruby>日本<rt>にほん</rt></ruby>をつなぐ<ruby>仕事<rt>しごと</rt></ruby>に<ruby>興味<rt>きょうみ</rt></ruby>がありますか。", hint: hint(["興味の有無", "理由", "できること"], ["はい、興味があります。", "〇〇を生かせると思います。", "将来、〇〇したいです。"], "日本語と母語を生かして、両方の国の人を助けたいです。") },
+      { level: "B1", category: "将来", text: "失敗した時、目標を続けるためにどうしますか。", html: "<ruby>失敗<rt>しっぱい</rt></ruby>した<ruby>時<rt>とき</rt></ruby>、<ruby>目標<rt>もくひょう</rt></ruby>を<ruby>続<rt>つづ</rt></ruby>けるためにどうしますか。", hint: hint(["失敗の受け止め方", "相談", "次の行動"], ["失敗から〇〇を学びます。", "必要な時は〇〇に相談します。", "次は〇〇します。"], "失敗した理由を考えて、次の方法を決めます。") },
+
+      { level: "B1", category: "生活・お金", text: "山口とあなたの国は、どんなところが違いますか。", html: "<ruby>山口<rt>やまぐち</rt></ruby>とあなたの<ruby>国<rt>くに</rt></ruby>は、どんなところが<ruby>違<rt>ちが</rt></ruby>いますか。", hint: hint(["違う点", "例", "自分の考え"], ["〇〇が違います。", "私の国では〇〇ですが、山口では〇〇です。", "私は〇〇と思います。"], "私の国より山口は静かで、交通の時間も違います。") },
+      { level: "B1", category: "生活・お金", text: "生活費を管理するために、どんなことをしていますか。", html: "<ruby>生活費<rt>せいかつひ</rt></ruby>を<ruby>管理<rt>かんり</rt></ruby>するために、どんなことをしていますか。", hint: hint(["予算", "記録", "節約"], ["毎月〇〇円までと決めています。", "使ったお金を記録します。", "〇〇を節約しています。"], "食費を決めて、買い物の前にメモを作ります。") },
+      { level: "B1", category: "生活・お金", text: "アルバイトと勉強のバランスが悪くなった時、どうしますか。", html: "アルバイトと<ruby>勉強<rt>べんきょう</rt></ruby>のバランスが<ruby>悪<rt>わる</rt></ruby>くなった<ruby>時<rt>とき</rt></ruby>、どうしますか。", hint: hint(["問題", "調整", "相談"], ["まず〇〇を確認します。", "シフトを〇〇します。", "必要なら〇〇に相談します。"], "勉強時間が足りない時は、早めにシフトを相談します。") },
+      { level: "B1", category: "生活・お金", text: "地域の人とよい関係を作るために、何が大切ですか。", html: "<ruby>地域<rt>ちいき</rt></ruby>の<ruby>人<rt>ひと</rt></ruby>とよい<ruby>関係<rt>かんけい</rt></ruby>を<ruby>作<rt>つく</rt></ruby>るために、<ruby>何<rt>なに</rt></ruby>が<ruby>大切<rt>たいせつ</rt></ruby>ですか。", hint: hint(["あいさつ", "ルール", "参加"], ["〇〇が大切です。", "地域のルールを守ります。", "できれば〇〇に参加します。"], "あいさつをして、地域のルールを守ることが大切です。") },
+      { level: "B1", category: "生活・お金", text: "困ったことがあった時、だれに相談しますか。", html: "<ruby>困<rt>こま</rt></ruby>ったことがあった<ruby>時<rt>とき</rt></ruby>、だれに<ruby>相談<rt>そうだん</rt></ruby>しますか。", hint: hint(["相談相手", "理由", "自分ですること"], ["〇〇に相談します。", "なぜなら、〇〇だからです。", "自分でも〇〇を確認します。"], "学校の先生に相談します。必要な情報を整理してから話します。") },
+      { level: "A2", category: "自己紹介", text: "日本の文化に興味がありますか。どんな文化に興味がありますか。", html: "<ruby>日本<rt>にほん</rt></ruby>の<ruby>文化<rt>ぶんか</rt></ruby>に<ruby>興味<rt>きょうみ</rt></ruby>がありますか。どんな<ruby>文化<rt>ぶんか</rt></ruby>に<ruby>興味<rt>きょうみ</rt></ruby>がありますか。", hint: hint(["興味があるか", "文化の名前", "理由"], ["はい、興味があります。", "〇〇に興味があります。", "理由は〇〇です。"], "はい、興味があります。日本の祭りに興味があります。") },
+      { level: "A2", category: "自己紹介", text: "あなたの国のどんなところがいいですか。", html: "あなたの<ruby>国<rt>くに</rt></ruby>のどんなところがいいですか。", hint: hint(["よいところ", "理由", "例"], ["私の国は〇〇がいいです。", "〇〇なので、好きです。", "たとえば、〇〇です。"], "私の国は食べ物がおいしいところがいいです。") },
+      { level: "A2", category: "生活・お金", text: "アルバイトをどうやって見つけましたか。", html: "アルバイトをどうやって<ruby>見<rt>み</rt></ruby>つけましたか。", hint: hint(["見つけた方法", "だれに聞いたか", "決めた理由"], ["〇〇で見つけました。", "友だちに紹介してもらいました。", "家から近いので決めました。"], "友だちに紹介してもらって、アルバイトを見つけました。") },
+      { level: "B1", category: "志望理由", text: "この学校の学費はいくらか知っていますか。", html: "この<ruby>学校<rt>がっこう</rt></ruby>の<ruby>学費<rt>がくひ</rt></ruby>はいくらか<ruby>知<rt>し</rt></ruby>っていますか。", hint: hint(["金額", "調べた方法", "準備"], ["学費は〇〇円ぐらいです。", "募集要項で確認しました。", "家族と相談して準備しています。"], "学費は募集要項で確認しました。家族と相談して準備しています。") },
+      { level: "B1", category: "生活・お金", text: "どんなアルバイトをしていますか。時給、週に何時間働くか、どんな仕事をしているか教えてください。", html: "どんなアルバイトをしていますか。<ruby>時給<rt>じきゅう</rt></ruby>、<ruby>週<rt>しゅう</rt></ruby>に<ruby>何時間<rt>なんじかん</rt></ruby><ruby>働<rt>はたら</rt></ruby>くか、どんな<ruby>仕事<rt>しごと</rt></ruby>をしているか<ruby>教<rt>おし</rt></ruby>えてください。", hint: hint(["仕事の種類", "時給と時間", "仕事内容"], ["〇〇のアルバイトをしています。", "時給は〇〇円で、週に〇〇時間働いています。", "仕事は〇〇です。"], "コンビニで働いています。時給は千円で、週に15時間ぐらい働いています。") },
+      { level: "B1", category: "自己紹介", text: "お父さんとお母さんは今、何歳ですか。どんな仕事をしていますか。", html: "お<ruby>父<rt>とう</rt></ruby>さんとお<ruby>母<rt>かあ</rt></ruby>さんは<ruby>今<rt>いま</rt></ruby>、<ruby>何歳<rt>なんさい</rt></ruby>ですか。どんな<ruby>仕事<rt>しごと</rt></ruby>をしていますか。", hint: hint(["年齢", "仕事", "支えてくれること"], ["父は〇歳で、〇〇をしています。", "母は〇歳で、〇〇をしています。", "家族は私を応援してくれています。"], "父は会社で働いています。母は店で働いています。家族は私を応援してくれています。") },
+      { level: "B1", category: "将来", text: "将来のために、今足りないことは何ですか。", html: "<ruby>将来<rt>しょうらい</rt></ruby>のために、<ruby>今<rt>いま</rt></ruby><ruby>足<rt>た</rt></ruby>りないことは<ruby>何<rt>なん</rt></ruby>ですか。", hint: hint(["足りないこと", "理由", "これからすること"], ["今、〇〇が足りないと思います。", "理由は〇〇です。", "これから〇〇をがんばります。"], "今、日本語で説明する力が足りないと思います。これから毎日練習します。") }
+    ];
+
+    const majorQuestions = [
+      { major: "介護", text: "どうして介護を勉強したいですか。", html: "どうして<ruby>介護<rt>かいご</rt></ruby>を<ruby>勉強<rt>べんきょう</rt></ruby>したいですか。", hint: hint(["きっかけ", "学びたいこと", "将来"], ["〇〇がきっかけです。", "介護の〇〇を学びたいです。", "将来、〇〇になりたいです。"], "人を助ける仕事がしたいので、介護を勉強したいです。") },
+      { major: "介護", text: "介護の仕事で大切なことは何だと思いますか。", html: "<ruby>介護<rt>かいご</rt></ruby>の<ruby>仕事<rt>しごと</rt></ruby>で<ruby>大切<rt>たいせつ</rt></ruby>なことは<ruby>何<rt>なん</rt></ruby>だと<ruby>思<rt>おも</rt></ruby>いますか。", hint: hint(["大切なこと", "理由", "行動"], ["〇〇が大切だと思います。", "利用者の方が〇〇できるからです。", "私は〇〇に気をつけます。"], "やさしく話を聞くことが大切だと思います。") },
+      { major: "介護", text: "お年寄りと話すとき、何に気をつけますか。", html: "<ruby>お年寄<rt>おとしよ</rt></ruby>りと<ruby>話<rt>はな</rt></ruby>すとき、<ruby>何<rt>なに</rt></ruby>に<ruby>気<rt>き</rt></ruby>をつけますか。", hint: hint(["声の大きさ", "話す速さ", "気持ち"], ["ゆっくり話します。", "相手の目を見ます。", "安心できるようにします。"], "相手が聞きやすいように、ゆっくりはっきり話します。") },
+      { major: "介護", text: "介護の仕事は大変なこともありますが、どうがんばりますか。", html: "<ruby>介護<rt>かいご</rt></ruby>の<ruby>仕事<rt>しごと</rt></ruby>は<ruby>大変<rt>たいへん</rt></ruby>なこともありますが、どうがんばりますか。", hint: hint(["大変な点", "相談", "続け方"], ["〇〇は大変だと思います。", "困った時は〇〇に相談します。", "勉強を続けます。"], "一人で無理をせず、先輩に相談しながらがんばります。") },
+      { major: "介護", text: "将来、どんな介護職員になりたいですか。", html: "<ruby>将来<rt>しょうらい</rt></ruby>、どんな<ruby>介護職員<rt>かいごしょくいん</rt></ruby>になりたいですか。", hint: hint(["なりたい姿", "理由", "今すること"], ["〇〇な介護職員になりたいです。", "利用者の方に〇〇してもらいたいです。", "今、〇〇をがんばります。"], "利用者の方に安心してもらえる職員になりたいです。") },
+
+      { major: "自動車整備", text: "どうして自動車整備を勉強したいですか。", html: "どうして<ruby>自動車整備<rt>じどうしゃせいび</rt></ruby>を<ruby>勉強<rt>べんきょう</rt></ruby>したいですか。", hint: hint(["興味", "学びたい技術", "将来"], ["〇〇に興味があります。", "整備の〇〇を学びたいです。", "将来、〇〇になりたいです。"], "車が好きで、安全を守る整備士になりたいです。") },
+      { major: "自動車整備", text: "車に興味を持ったきっかけは何ですか。", html: "<ruby>車<rt>くるま</rt></ruby>に<ruby>興味<rt>きょうみ</rt></ruby>を<ruby>持<rt>も</rt></ruby>ったきっかけは<ruby>何<rt>なん</rt></ruby>ですか。", hint: hint(["きっかけ", "気持ち", "今の目標"], ["きっかけは〇〇です。", "その時、〇〇と思いました。", "今は〇〇を学びたいです。"], "父の車を見て、どう動くのか知りたいと思いました。") },
+      { major: "自動車整備", text: "自動車整備の仕事で大切なことは何だと思いますか。", html: "<ruby>自動車整備<rt>じどうしゃせいび</rt></ruby>の<ruby>仕事<rt>しごと</rt></ruby>で<ruby>大切<rt>たいせつ</rt></ruby>なことは<ruby>何<rt>なん</rt></ruby>だと<ruby>思<rt>おも</rt></ruby>いますか。", hint: hint(["安全", "確認", "責任"], ["〇〇が大切だと思います。", "小さいミスも〇〇につながります。", "必ず確認します。"], "安全と正確な確認が大切だと思います。") },
+      { major: "自動車整備", text: "安全に作業するために、何に気をつけますか。", html: "<ruby>安全<rt>あんぜん</rt></ruby>に<ruby>作業<rt>さぎょう</rt></ruby>するために、<ruby>何<rt>なに</rt></ruby>に<ruby>気<rt>き</rt></ruby>をつけますか。", hint: hint(["道具", "手順", "まわり"], ["道具を正しく使います。", "手順を守ります。", "まわりを確認します。"], "作業前に道具と場所を確認して、手順を守ります。") },
+      { major: "自動車整備", text: "将来、どんな整備士になりたいですか。", html: "<ruby>将来<rt>しょうらい</rt></ruby>、どんな<ruby>整備士<rt>せいびし</rt></ruby>になりたいですか。", hint: hint(["なりたい姿", "お客様", "努力"], ["〇〇な整備士になりたいです。", "お客様に〇〇してもらいたいです。", "そのために〇〇を学びます。"], "お客様に信頼される整備士になりたいです。") },
+
+      { major: "IT", text: "どうしてITを勉強したいですか。", html: "どうしてITを<ruby>勉強<rt>べんきょう</rt></ruby>したいですか。", hint: hint(["興味", "作りたいもの", "将来"], ["ITに興味があります。", "〇〇を作ってみたいです。", "将来、〇〇の仕事をしたいです。"], "アプリを作って、人の生活を便利にしたいです。") },
+      { major: "IT", text: "パソコンやスマートフォンを使って、何をすることが好きですか。", html: "パソコンやスマートフォンを<ruby>使<rt>つか</rt></ruby>って、<ruby>何<rt>なに</rt></ruby>をすることが<ruby>好<rt>す</rt></ruby>きですか。", hint: hint(["好きなこと", "理由", "学びたいこと"], ["〇〇をすることが好きです。", "理由は〇〇です。", "もっと〇〇を学びたいです。"], "動画編集が好きです。仕組みも学びたいです。") },
+      { major: "IT", text: "ITの勉強で、どんなことを学びたいですか。", html: "ITの<ruby>勉強<rt>べんきょう</rt></ruby>で、どんなことを<ruby>学<rt>まな</rt></ruby>びたいですか。", hint: hint(["分野", "理由", "使い方"], ["〇〇を学びたいです。", "〇〇に役立つと思います。", "将来、〇〇に使いたいです。"], "プログラミングを学び、仕事で使える力をつけたいです。") },
+      { major: "IT", text: "わからないエラーが出たとき、どうしますか。", html: "わからないエラーが<ruby>出<rt>で</rt></ruby>たとき、どうしますか。", hint: hint(["読む", "調べる", "聞く"], ["まずエラー文を読みます。", "インターネットや本で調べます。", "それでもわからない時は質問します。"], "エラー文をコピーして調べ、原因を一つずつ確認します。") },
+      { major: "IT", text: "将来、ITの知識を使ってどんな仕事をしたいですか。", html: "<ruby>将来<rt>しょうらい</rt></ruby>、ITの<ruby>知識<rt>ちしき</rt></ruby>を<ruby>使<rt>つか</rt></ruby>ってどんな<ruby>仕事<rt>しごと</rt></ruby>をしたいですか。", hint: hint(["仕事", "役立て方", "目標"], ["将来、〇〇の仕事をしたいです。", "ITで〇〇を便利にしたいです。", "そのために〇〇を学びます。"], "システムを作って、会社の仕事を便利にしたいです。") },
+
+      { major: "観光", text: "どうして観光を勉強したいですか。", html: "どうして<ruby>観光<rt>かんこう</rt></ruby>を<ruby>勉強<rt>べんきょう</rt></ruby>したいですか。", hint: hint(["きっかけ", "好きなこと", "将来"], ["〇〇がきっかけです。", "人に〇〇を紹介することが好きです。", "将来、〇〇したいです。"], "日本のよいところを多くの人に紹介したいです。") },
+      { major: "観光", text: "観光の仕事で大切なことは何だと思いますか。", html: "<ruby>観光<rt>かんこう</rt></ruby>の<ruby>仕事<rt>しごと</rt></ruby>で<ruby>大切<rt>たいせつ</rt></ruby>なことは<ruby>何<rt>なん</rt></ruby>だと<ruby>思<rt>おも</rt></ruby>いますか。", hint: hint(["お客様", "説明", "心配り"], ["〇〇が大切だと思います。", "お客様が〇〇できるからです。", "私は〇〇に気をつけます。"], "相手の気持ちを考えて、わかりやすく説明することが大切です。") },
+      { major: "観光", text: "お客様に山口県を紹介するとしたら、何を紹介しますか。", html: "お<ruby>客様<rt>きゃくさま</rt></ruby>に<ruby>山口県<rt>やまぐちけん</rt></ruby>を<ruby>紹介<rt>しょうかい</rt></ruby>するとしたら、<ruby>何<rt>なに</rt></ruby>を<ruby>紹介<rt>しょうかい</rt></ruby>しますか。", hint: hint(["場所・食べ物", "よいところ", "すすめ方"], ["〇〇を紹介したいです。", "〇〇が有名です。", "ぜひ〇〇してほしいです。"], "角島やふぐを紹介したいです。景色と食べ物がすばらしいです。") },
+      { major: "観光", text: "外国人のお客様と話すとき、何に気をつけますか。", html: "<ruby>外国人<rt>がいこくじん</rt></ruby>のお<ruby>客様<rt>きゃくさま</rt></ruby>と<ruby>話<rt>はな</rt></ruby>すとき、<ruby>何<rt>なに</rt></ruby>に<ruby>気<rt>き</rt></ruby>をつけますか。", hint: hint(["言葉", "文化", "確認"], ["わかりやすい言葉で話します。", "文化の違いを大切にします。", "困っていないか確認します。"], "ゆっくり話し、相手が安心できるようにします。") },
+      { major: "観光", text: "将来、観光の仕事でどんな人になりたいですか。", html: "<ruby>将来<rt>しょうらい</rt></ruby>、<ruby>観光<rt>かんこう</rt></ruby>の<ruby>仕事<rt>しごと</rt></ruby>でどんな<ruby>人<rt>ひと</rt></ruby>になりたいですか。", hint: hint(["なりたい姿", "理由", "学ぶこと"], ["〇〇な人になりたいです。", "お客様に〇〇してもらいたいです。", "そのために〇〇を学びます。"], "お客様にまた来たいと思ってもらえる人になりたいです。") },
+
+      { major: "ビジネス", text: "どうしてビジネスを勉強したいですか。", html: "どうしてビジネスを<ruby>勉強<rt>べんきょう</rt></ruby>したいですか。", hint: hint(["興味", "学びたいこと", "将来"], ["〇〇に興味があります。", "ビジネスの〇〇を学びたいです。", "将来、〇〇したいです。"], "会社で必要なマナーや会計を学びたいです。") },
+      { major: "ビジネス", text: "ビジネスの勉強で、どんなことを学びたいですか。", html: "ビジネスの<ruby>勉強<rt>べんきょう</rt></ruby>で、どんなことを<ruby>学<rt>まな</rt></ruby>びたいですか。", hint: hint(["分野", "理由", "使い方"], ["〇〇を学びたいです。", "将来、〇〇に役立つと思います。", "仕事で〇〇したいです。"], "ビジネスマナーとパソコンを学び、会社で役立てたいです。") },
+      { major: "ビジネス", text: "会社で働くとき、大切なことは何だと思いますか。", html: "<ruby>会社<rt>かいしゃ</rt></ruby>で<ruby>働<rt>はたら</rt></ruby>くとき、<ruby>大切<rt>たいせつ</rt></ruby>なことは<ruby>何<rt>なん</rt></ruby>だと<ruby>思<rt>おも</rt></ruby>いますか。", hint: hint(["ルール", "協力", "報告"], ["〇〇が大切だと思います。", "会社では〇〇が必要です。", "私は〇〇を守ります。"], "時間を守り、報告・連絡・相談をすることが大切です。") },
+      { major: "ビジネス", text: "チームで仕事をするとき、何に気をつけますか。", html: "チームで<ruby>仕事<rt>しごと</rt></ruby>をするとき、<ruby>何<rt>なに</rt></ruby>に<ruby>気<rt>き</rt></ruby>をつけますか。", hint: hint(["役割", "連絡", "相手"], ["自分の役割を確認します。", "早めに連絡します。", "相手の意見を聞きます。"], "自分の仕事だけでなく、チーム全体を考えます。") },
+      { major: "ビジネス", text: "将来、ビジネスの勉強をどう生かしたいですか。", html: "<ruby>将来<rt>しょうらい</rt></ruby>、ビジネスの<ruby>勉強<rt>べんきょう</rt></ruby>をどう<ruby>生<rt>い</rt></ruby>かしたいですか。", hint: hint(["仕事", "使う力", "目標"], ["将来、〇〇の仕事で生かしたいです。", "〇〇の力を使いたいです。", "目標は〇〇です。"], "会社で働く時、マナーとパソコンの力を生かしたいです。") }
+    ];
+
+    commonQuestions.forEach((question, index) => {
+      question.audio = `audio/common-${String(index + 1).padStart(3, "0")}.wav`;
+    });
+
+    majorQuestions.forEach((question, index) => {
+      question.audio = `audio/major-${String(index + 1).padStart(3, "0")}.wav`;
+    });
+
+    function hint(order, phrases, example) {
+      const orderItems = order.map((item, index) => `<li>${["①", "②", "③"][index]} ${rubyText(item)}</li>`).join("");
+      const phraseItems = phrases.map((item) => `<li>${rubyText(item)}</li>`).join("");
+      return `
+        <h2><ruby>答<rt>こた</rt></ruby>え<ruby>方<rt>かた</rt></ruby>のヒント</h2>
+        <ul>${orderItems}</ul>
+        <p><strong><ruby>使<rt>つか</rt></ruby>える<ruby>表現<rt>ひょうげん</rt></ruby>：</strong></p>
+        <ul>${phraseItems}</ul>
+        <p><strong><ruby>短<rt>みじか</rt></ruby>い<ruby>例文<rt>れいぶん</rt></ruby>：</strong>${rubyText(example)}</p>
+      `;
+    }
+
+    function rubyText(text) {
+      const map = {
+        "名前": "<ruby>名前<rt>なまえ</rt></ruby>",
+        "国": "<ruby>国<rt>くに</rt></ruby>",
+        "好き": "<ruby>好<rt>す</rt></ruby>き",
+        "今": "<ruby>今<rt>いま</rt></ruby>",
+        "日本語": "<ruby>日本語<rt>にほんご</rt></ruby>",
+        "勉強": "<ruby>勉強<rt>べんきょう</rt></ruby>",
+        "将来": "<ruby>将来<rt>しょうらい</rt></ruby>",
+        "仕事": "<ruby>仕事<rt>しごと</rt></ruby>",
+        "学校": "<ruby>学校<rt>がっこう</rt></ruby>",
+        "専門学校": "<ruby>専門学校<rt>せんもんがっこう</rt></ruby>",
+        "理由": "<ruby>理由<rt>りゆう</rt></ruby>",
+        "生活": "<ruby>生活<rt>せいかつ</rt></ruby>",
+        "大切": "<ruby>大切<rt>たいせつ</rt></ruby>",
+        "確認": "<ruby>確認<rt>かくにん</rt></ruby>",
+        "相談": "<ruby>相談<rt>そうだん</rt></ruby>",
+        "練習": "<ruby>練習<rt>れんしゅう</rt></ruby>",
+        "目標": "<ruby>目標<rt>もくひょう</rt></ruby>",
+        "経験": "<ruby>経験<rt>けいけん</rt></ruby>",
+        "山口": "<ruby>山口<rt>やまぐち</rt></ruby>",
+        "介護": "<ruby>介護<rt>かいご</rt></ruby>",
+        "安全": "<ruby>安全<rt>あんぜん</rt></ruby>",
+        "お客様": "お<ruby>客様<rt>きゃくさま</rt></ruby>",
+        "説明": "<ruby>説明<rt>せつめい</rt></ruby>",
+        "例": "<ruby>例<rt>れい</rt></ruby>",
+        "時間": "<ruby>時間<rt>じかん</rt></ruby>",
+        "友だち": "<ruby>友<rt>とも</rt></ruby>だち",
+        "先生": "<ruby>先生<rt>せんせい</rt></ruby>"
+      };
+      const keys = Object.keys(map).sort((a, b) => b.length - a.length);
+      let html = "";
+      let index = 0;
+      while (index < text.length) {
+        const key = keys.find((candidate) => text.startsWith(candidate, index));
+        if (key) {
+          html += map[key];
+          index += key.length;
+        } else {
+          html += text[index];
+          index += 1;
+        }
+      }
+      return html;
+    }
+
+    const state = {
+      currentListKey: "",
+      orderIndex: 0,
+      currentQuestion: null,
+      lastRandomIndex: -1,
+      audioPlayer: null
+    };
+
+    const els = {
+      categoryField: document.getElementById("categoryField"),
+      majorField: document.getElementById("majorField"),
+      categorySelect: document.getElementById("categorySelect"),
+      majorSelect: document.getElementById("majorSelect"),
+      voiceSelect: document.getElementById("voiceSelect"),
+      nextBtn: document.getElementById("nextBtn"),
+      hintBtn: document.getElementById("hintBtn"),
+      speakBtn: document.getElementById("speakBtn"),
+      questionBox: document.getElementById("questionBox")
+    };
+
+    document.querySelectorAll("input, select").forEach((input) => {
+      input.addEventListener("change", () => {
+        updateFields();
+        resetProgress();
+      });
+    });
+
+    els.nextBtn.addEventListener("click", showNextQuestion);
+    els.hintBtn.addEventListener("click", toggleHint);
+    els.speakBtn.addEventListener("click", speakQuestion);
+
+    updateFields();
+    setupVoices();
+
+    function getRadioValue(name) {
+      return document.querySelector(`input[name="${name}"]:checked`).value;
+    }
+
+    function updateFields() {
+      const type = getRadioValue("type");
+      const isMajor = type === "major";
+      els.majorField.classList.toggle("hidden", !isMajor);
+      els.categoryField.classList.toggle("hidden", isMajor);
+    }
+
+    function resetProgress() {
+      state.currentListKey = "";
+      state.orderIndex = 0;
+      state.lastRandomIndex = -1;
+      stopSpeaking();
+      els.questionBox.innerHTML = '<p class="empty">「次の質問」を押してください。</p>';
+      els.hintBtn.textContent = "ヒントを見る";
+      state.currentQuestion = null;
+    }
+
+    function getQuestionList() {
+      const type = getRadioValue("type");
+      if (type === "major") {
+        const major = els.majorSelect.value;
+        return majorQuestions.filter((item) => item.major === major);
+      }
+      const level = getRadioValue("level");
+      const category = els.categorySelect.value;
+      return commonQuestions.filter((item) => item.level === level && item.category === category);
+    }
+
+    function getListKey() {
+      const type = getRadioValue("type");
+      if (type === "major") return `major:${els.majorSelect.value}`;
+      return `common:${getRadioValue("level")}:${els.categorySelect.value}`;
+    }
+
+    function showNextQuestion() {
+      stopSpeaking();
+      const list = getQuestionList();
+      const key = getListKey();
+      if (key !== state.currentListKey) {
+        state.currentListKey = key;
+        state.orderIndex = 0;
+        state.lastRandomIndex = -1;
+      }
+
+      if (!list.length) {
+        els.questionBox.innerHTML = '<p class="empty">質問がありません。</p>';
+        return;
+      }
+
+      const mode = getRadioValue("mode");
+      let index;
+      if (mode === "random") {
+        index = Math.floor(Math.random() * list.length);
+        if (list.length > 1) {
+          while (index === state.lastRandomIndex) {
+            index = Math.floor(Math.random() * list.length);
+          }
+        }
+        state.lastRandomIndex = index;
+      } else {
+        index = state.orderIndex % list.length;
+        state.orderIndex += 1;
+      }
+
+      const question = list[index];
+      state.currentQuestion = question;
+      const meta = getRadioValue("type") === "major"
+        ? `<span class="tag">${question.major}</span>`
+        : `<span class="tag">${question.level}</span><span class="tag">${question.category}</span>`;
+
+      els.questionBox.innerHTML = `
+        <div class="meta">
+          ${meta}
+          <span class="tag count">${index + 1} / ${list.length}</span>
+        </div>
+        <p class="question">${question.html}</p>
+        <div class="hint" id="hintBox">${question.hint}</div>
+      `;
+      els.hintBtn.textContent = "ヒントを見る";
+    }
+
+    function toggleHint() {
+      const hintBox = document.getElementById("hintBox");
+      if (!hintBox) return;
+      const isShown = hintBox.classList.toggle("show");
+      els.hintBtn.textContent = isShown ? "ヒントをかくす" : "ヒントを見る";
+    }
+
+    function speakQuestion() {
+      if (!state.currentQuestion) return;
+      stopSpeaking();
+
+      if (state.currentQuestion.audio) {
+        const audio = new Audio(state.currentQuestion.audio);
+        state.audioPlayer = audio;
+        audio.addEventListener("error", speakWithBrowserVoice, { once: true });
+        audio.play().catch(speakWithBrowserVoice);
+        return;
+      }
+
+      speakWithBrowserVoice();
+    }
+
+    function speakWithBrowserVoice() {
+      if (!state.currentQuestion || !("speechSynthesis" in window)) return;
+      const utterance = new SpeechSynthesisUtterance(state.currentQuestion.text);
+      utterance.lang = "ja-JP";
+      utterance.rate = getRadioValue("speed") === "slow" ? 0.72 : 0.95;
+      utterance.pitch = 1;
+      const jaVoice = getSelectedVoice();
+      if (jaVoice) utterance.voice = jaVoice;
+      window.speechSynthesis.speak(utterance);
+    }
+
+    function stopSpeaking() {
+      if (state.audioPlayer) {
+        state.audioPlayer.pause();
+        state.audioPlayer.currentTime = 0;
+        state.audioPlayer = null;
+      }
+      if ("speechSynthesis" in window) {
+        window.speechSynthesis.cancel();
+      }
+    }
+
+    if ("speechSynthesis" in window) {
+      window.speechSynthesis.onvoiceschanged = setupVoices;
+    }
+
+    function setupVoices() {
+      if (!("speechSynthesis" in window)) {
+        els.voiceSelect.innerHTML = '<option value="">このブラウザは音声に対応していません</option>';
+        els.voiceSelect.disabled = true;
+        return;
+      }
+      const currentValue = els.voiceSelect.value;
+      const japaneseVoices = getJapaneseVoices();
+      els.voiceSelect.innerHTML = '<option value="">日本語の音声を自動で選ぶ</option>';
+      japaneseVoices.forEach((voice) => {
+        const option = document.createElement("option");
+        option.value = voice.name;
+        option.textContent = `${voice.name}（${voice.lang}）`;
+        els.voiceSelect.appendChild(option);
+      });
+      if (japaneseVoices.some((voice) => voice.name === currentValue)) {
+        els.voiceSelect.value = currentValue;
+      }
+    }
+
+    function getJapaneseVoices() {
+      return window.speechSynthesis
+        .getVoices()
+        .filter((voice) => voice.lang && voice.lang.toLowerCase().startsWith("ja"));
+    }
+
+    function getSelectedVoice() {
+      const japaneseVoices = getJapaneseVoices();
+      if (!japaneseVoices.length) return null;
+      const selectedName = els.voiceSelect.value;
+      if (selectedName) {
+        const selectedVoice = japaneseVoices.find((voice) => voice.name === selectedName);
+        if (selectedVoice) return selectedVoice;
+      }
+
+      const preferredWords = [
+        "Kyoko",
+        "Otoya",
+        "Nanami",
+        "Haruka",
+        "Microsoft",
+        "Google",
+        "Siri"
+      ];
+      return japaneseVoices.find((voice) => {
+        const name = voice.name.toLowerCase();
+        return preferredWords.some((word) => name.includes(word.toLowerCase()));
+      }) || japaneseVoices[0];
+    }
+  </script>
+</body>
+</html>
