@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>在留更新ことばビンゴ</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      margin: 0;
+      padding: 8px;
+      font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", "Segoe UI", sans-serif;
+      background: #f5f6f7;
+      color: #222;
+      -webkit-text-size-adjust: 100%;
+    }
+
+    .app {
+      width: 100%;
+      max-width: 520px;
+      margin: 0 auto;
+      background: #fff;
+      border-radius: 14px;
+      padding: 12px;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+    }
+
+    h1 {
+      margin: 0 0 6px;
+      text-align: center;
+      font-size: 1.15rem;
+    }
+
+    .subtitle {
+      text-align: center;
+      color: #555;
+      font-size: 0.82rem;
+      line-height: 1.35;
+      margin-bottom: 8px;
+    }
+
+    .toggle-row,
+    .button-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin: 8px 0;
+    }
+
+    button {
+      -webkit-appearance: none;
+      appearance: none;
+      border: none;
+      border-radius: 10px;
+      padding: 9px 5px;
+      min-height: 38px;
+      font-size: 0.86rem;
+      font-weight: 700;
+      cursor: pointer;
+      background: #2f6fb3;
+      color: #fff;
+      touch-action: manipulation;
+    }
+
+    button.secondary {
+      background: #66717a;
+    }
+
+    button.toggle {
+      background: #e8edf2;
+      color: #2b3a45;
+      border: 2px solid transparent;
+    }
+
+    button.toggle.active {
+      background: #dcecff;
+      color: #064a8a;
+      border-color: #4b8edb;
+    }
+
+    .bingo-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 6px;
+      margin: 10px 0;
+    }
+
+    .cell {
+      min-height: 68px;
+      border: 2px solid #cfd6dc;
+      border-radius: 12px;
+      background: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 4px 2px;
+      font-weight: 700;
+      line-height: 1.15;
+      cursor: pointer;
+      user-select: none;
+      -webkit-user-select: none;
+      overflow-wrap: anywhere;
+      touch-action: manipulation;
+    }
+
+    .cell.selected {
+      background: #dcecff;
+      border-color: #4b8edb;
+      color: #064a8a;
+    }
+
+    .cell.bingo-line {
+      background: #ffe8a3;
+      border-color: #d59a00;
+      color: #6b4a00;
+    }
+
+    .word-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      gap: 1px;
+    }
+
+    .ruby {
+      font-size: 0.48rem;
+      color: #58636d;
+      line-height: 1.05;
+    }
+
+    .word {
+      font-size: 0.82rem;
+      line-height: 1.15;
+    }
+
+    .status {
+      background: #f0f3f5;
+      border-radius: 10px;
+      padding: 8px;
+      margin: 8px 0;
+      text-align: center;
+      font-size: 0.86rem;
+      font-weight: 700;
+      line-height: 1.35;
+      min-height: 34px;
+    }
+
+    .teacher-card {
+      margin-top: 12px;
+      padding: 10px;
+      border-radius: 12px;
+      background: #f8fafc;
+      border: 1px solid #d8e0e7;
+    }
+
+    .teacher-card h2 {
+      margin: 0 0 6px;
+      font-size: 0.95rem;
+    }
+
+    .meaning {
+      min-height: 42px;
+      background: #fff;
+      border: 1px solid #e0e5ea;
+      border-radius: 10px;
+      padding: 8px;
+      font-size: 0.9rem;
+      line-height: 1.42;
+    }
+
+    .answer {
+      display: none;
+      margin-top: 6px;
+      font-size: 0.86rem;
+      line-height: 1.4;
+      color: #444;
+    }
+
+    .answer.show {
+      display: block;
+    }
+
+    .small {
+      margin-top: 8px;
+      font-size: 0.76rem;
+      color: #666;
+      line-height: 1.35;
+    }
+
+    @media (max-width: 390px) {
+      body {
+        padding: 5px;
+      }
+
+      .app {
+        padding: 9px;
+        border-radius: 12px;
+      }
+
+      h1 {
+        font-size: 1.02rem;
+      }
+
+      .subtitle {
+        font-size: 0.74rem;
+      }
+
+      .bingo-grid {
+        gap: 5px;
+      }
+
+      .cell {
+        min-height: 62px;
+      }
+
+      .word {
+        font-size: 0.74rem;
+      }
+
+      .ruby {
+        font-size: 0.42rem;
+      }
+
+      button {
+        font-size: 0.76rem;
+        min-height: 34px;
+        padding: 7px 3px;
+      }
+
+      .meaning {
+        font-size: 0.82rem;
+      }
+
+      .small {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <h1>在留更新ことばビンゴ</h1>
+
+    <div class="subtitle">
+      先生が意味を読みます。合う言葉をタップしてください。<br>
+      3つそろったらビンゴです。
+    </div>
+
+    <div class="toggle-row">
+      <button id="furiganaOnBtn" class="toggle active" type="button">フリガナあり</button>
+      <button id="furiganaOffBtn" class="toggle" type="button">フリガナなし</button>
+    </div>
+
+    <div id="bingoGrid" class="bingo-grid">
+      <div class="cell">読み込み中</div>
+      <div class="cell">読み込み中</div>
+      <div class="cell">読み込み中</div>
+      <div class="cell">読み込み中</div>
+      <div class="cell">読み込み中</div>
+      <div class="cell">読み込み中</div>
+      <div class="cell">読み込み中</div>
+      <div class="cell">読み込み中</div>
+      <div class="cell">読み込み中</div>
+    </div>
+
+    <div id="status" class="status">まだビンゴではありません。</div>
+
+    <div class="button-row">
+      <button id="shuffleBtn" type="button">カードをまぜる</button>
+      <button id="resetBtn" class="secondary" type="button">〇を消す</button>
+    </div>
+
+    <div class="teacher-card">
+      <h2>先生用：意味カード</h2>
+      <div id="meaningText" class="meaning">「次の意味」を押してください。</div>
+      <div id="answerText" class="answer"></div>
+      <div class="button-row">
+        <button id="nextMeaningBtn" type="button">次の意味</button>
+        <button id="answerBtn" class="secondary" type="button">答えを見る</button>
+      </div>
+    </div>
+
+    <div class="small">
+      ビンゴになった人は、〇をつけた言葉から1つ選んで文を言います。<br>
+      例：私の在留期限は、2026年7月10日です。
+    </div>
+  </div>
+
+  <script>
+    var items = [
+      { word: "在留期限", ruby: "ざいりゅうきげん", meaning: "今の在留カードが使える最後の日です。" },
+      { word: "申請期間", ruby: "しんせいきかん", meaning: "在留期間更新の申請ができる時期です。" },
+      { word: "取次者", ruby: "とりつぎしゃ", meaning: "本人のかわりに申請の手続きをする人です。" },
+      { word: "本人", ruby: "ほんにん", meaning: "自分で申請する人です。" },
+      { word: "オンライン申請", ruby: "オンラインしんせい", meaning: "インターネットで申請することです。" },
+      { word: "入管", ruby: "にゅうかん", meaning: "出入国在留管理局のことです。" },
+      { word: "資格外活動許可", ruby: "しかくがいかつどうきょか", meaning: "留学生がアルバイトをするために必要な許可です。" },
+      { word: "手数料", ruby: "てすうりょう", meaning: "新しい在留カードを受け取るときに払うお金です。" },
+      { word: "経費支弁者", ruby: "けいひしべんしゃ", meaning: "学費や生活費を払う人です。" }
+    ];
+
+    var bingoLines = [
+      [0, 1, 2], [3, 4, 5], [6, 7, 8],
+      [0, 3, 6], [1, 4, 7], [2, 5, 8],
+      [0, 4, 8], [2, 4, 6]
+    ];
+
+    var board = [];
+    var selected = [false, false, false, false, false, false, false, false, false];
+    var showFurigana = true;
+    var remainingMeanings = [];
+    var currentMeaning = null;
+
+    function shuffleArray(array) {
+      var copy = array.slice(0);
+      var i, j, temp;
+      for (i = copy.length - 1; i > 0; i--) {
+        j = Math.floor(Math.random() * (i + 1));
+        temp = copy[i];
+        copy[i] = copy[j];
+        copy[j] = temp;
+      }
+      return copy;
+    }
+
+    function makeSelectedArray() {
+      return [false, false, false, false, false, false, false, false, false];
+    }
+
+    function makeWordHtml(item) {
+      if (showFurigana) {
+        return '<div class="word-wrap"><div class="ruby">' + item.ruby + '</div><div class="word">' + item.word + '</div></div>';
+      }
+      return '<div class="word-wrap"><div class="word">' + item.word + '</div></div>';
+    }
+
+    function isInArray(array, value) {
+      for (var i = 0; i < array.length; i++) {
+        if (array[i] === value) return true;
+      }
+      return false;
+    }
+
+    function getBingoCells() {
+      var cells = [];
+      for (var i = 0; i < bingoLines.length; i++) {
+        var line = bingoLines[i];
+        if (selected[line[0]] && selected[line[1]] && selected[line[2]]) {
+          for (var j = 0; j < line.length; j++) {
+            if (!isInArray(cells, line[j])) {
+              cells.push(line[j]);
+            }
+          }
+        }
+      }
+      return cells;
+    }
+
+    function getBingoCount() {
+      var count = 0;
+      for (var i = 0; i < bingoLines.length; i++) {
+        var line = bingoLines[i];
+        if (selected[line[0]] && selected[line[1]] && selected[line[2]]) {
+          count++;
+        }
+      }
+      return count;
+    }
+
+    function selectedCount() {
+      var count = 0;
+      for (var i = 0; i < selected.length; i++) {
+        if (selected[i]) count++;
+      }
+      return count;
+    }
+
+    function makeCellClick(index) {
+      return function() {
+        selected[index] = !selected[index];
+        renderBoard();
+      };
+    }
+
+    function renderBoard() {
+      var grid = document.getElementById('bingoGrid');
+      if (!grid) return;
+
+      grid.innerHTML = '';
+      var bingoCells = getBingoCells();
+
+      for (var i = 0; i < board.length; i++) {
+        var cell = document.createElement('div');
+        cell.className = 'cell';
+        if (selected[i]) cell.className += ' selected';
+        if (isInArray(bingoCells, i)) cell.className += ' bingo-line';
+        cell.innerHTML = makeWordHtml(board[i]);
+        cell.onclick = makeCellClick(i);
+        grid.appendChild(cell);
+      }
+
+      updateStatus();
+      updateAnswer();
+    }
+
+    function updateStatus() {
+      var status = document.getElementById('status');
+      if (!status) return;
+
+      var bingoCount = getBingoCount();
+      if (bingoCount > 0) {
+        status.innerHTML = 'ビンゴ！ ' + bingoCount + '列そろいました。<br>言葉を1つ使って文を言いましょう。';
+      } else {
+        status.innerHTML = '〇は ' + selectedCount() + ' 個です。まだビンゴではありません。';
+      }
+    }
+
+    function shuffleBoard() {
+      board = shuffleArray(items);
+      selected = makeSelectedArray();
+      renderBoard();
+    }
+
+    function resetMarks() {
+      selected = makeSelectedArray();
+      renderBoard();
+    }
+
+    function setFurigana(value) {
+      showFurigana = value;
+      var onBtn = document.getElementById('furiganaOnBtn');
+      var offBtn = document.getElementById('furiganaOffBtn');
+      if (onBtn && offBtn) {
+        if (value) {
+          onBtn.className = 'toggle active';
+          offBtn.className = 'toggle';
+        } else {
+          onBtn.className = 'toggle';
+          offBtn.className = 'toggle active';
+        }
+      }
+      renderBoard();
+    }
+
+    function getAnswerText(item) {
+      if (!item) return '';
+      if (showFurigana) return '答え：' + item.word + '（' + item.ruby + '）';
+      return '答え：' + item.word;
+    }
+
+    function nextMeaning() {
+      if (remainingMeanings.length === 0) {
+        remainingMeanings = shuffleArray(items);
+      }
+      currentMeaning = remainingMeanings.pop();
+      var meaningText = document.getElementById('meaningText');
+      var answerText = document.getElementById('answerText');
+      if (meaningText) meaningText.innerHTML = currentMeaning.meaning;
+      if (answerText) {
+        answerText.innerHTML = getAnswerText(currentMeaning);
+        answerText.className = 'answer';
+      }
+    }
+
+    function updateAnswer() {
+      var answerText = document.getElementById('answerText');
+      if (answerText && currentMeaning) {
+        answerText.innerHTML = getAnswerText(currentMeaning);
+      }
+    }
+
+    function toggleAnswer() {
+      if (!currentMeaning) return;
+      var answerText = document.getElementById('answerText');
+      if (!answerText) return;
+      if (answerText.className.indexOf('show') === -1) {
+        answerText.className = 'answer show';
+      } else {
+        answerText.className = 'answer';
+      }
+    }
+
+    function startApp() {
+      board = items.slice(0);
+      selected = makeSelectedArray();
+      remainingMeanings = shuffleArray(items);
+
+      document.getElementById('furiganaOnBtn').onclick = function() { setFurigana(true); };
+      document.getElementById('furiganaOffBtn').onclick = function() { setFurigana(false); };
+      document.getElementById('shuffleBtn').onclick = shuffleBoard;
+      document.getElementById('resetBtn').onclick = resetMarks;
+      document.getElementById('nextMeaningBtn').onclick = nextMeaning;
+      document.getElementById('answerBtn').onclick = toggleAnswer;
+
+      renderBoard();
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', startApp, false);
+    } else {
+      startApp();
+    }
+  </script>
+</body>
+</html>
