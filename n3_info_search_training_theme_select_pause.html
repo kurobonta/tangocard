@@ -1,0 +1,988 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>N3 情報検索トレーニング テーマ選択版</title>
+<style>
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background:#f6f7f9; color:#222; margin:0; padding:16px;
+}
+.wrap { max-width:760px; margin:0 auto; }
+.card {
+  background:#fff; border-radius:14px; padding:18px; margin-bottom:16px;
+  box-shadow:0 2px 10px rgba(0,0,0,0.06);
+}
+h1,h2 { margin-top:0; }
+.controls {
+  display:grid; gap:12px; grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+}
+label { display:block; font-weight:600; margin-bottom:6px; }
+select, button {
+  width:100%; padding:10px 12px; font-size:16px; border-radius:10px; border:1px solid #ccc;
+}
+button { cursor:pointer; background:#fff; }
+.topbar {
+  display:flex; justify-content:space-between; gap:8px; flex-wrap:wrap; margin-bottom:12px;
+}
+.prompt {
+  white-space:pre-line; line-height:1.9; background:#f3f6fb; padding:14px; border-radius:10px; margin-bottom:14px;
+}
+.question { font-size:18px; font-weight:700; margin-bottom:14px; }
+.choices { display:grid; gap:10px; }
+.choice {
+  text-align:left; padding:12px 14px; border:1px solid #ccc; border-radius:10px; background:#fff;
+}
+.choice:disabled { opacity:0.95; }
+.hidden { display:none; }
+.result { margin-top:14px; padding:12px 14px; border-radius:10px; line-height:1.7; }
+.correct { background:#eef9f0; border:1px solid #b9e1c1; }
+.wrong { background:#fff2f2; border:1px solid #f0c0c0; }
+.small { color:#555; font-size:14px; line-height:1.7; }
+.badge {
+  display:inline-block; background:#eef3ff; border:1px solid #c9d5ff;
+  border-radius:999px; padding:3px 8px; font-size:13px; margin-left:8px;
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="card" id="setup">
+    <h1>N3 情報検索トレーニング</h1>
+    <p>テーマを選んで、短い案内文を時間内に答えます。選択肢は毎回ランダムです。</p>
+    <div class="controls">
+      <div>
+        <label for="theme">テーマ</label>
+        <select id="theme">
+          <option value="all">全部</option>
+          <option value="料金・数値">料金・数値</option>
+          <option value="日時・条件">日時・条件</option>
+          <option value="制限・例外">制限・例外</option>
+        </select>
+      </div>
+      <div>
+        <label for="speed">表示時間</label>
+        <select id="speed">
+          <option value="0">停止モード（時間なし）</option>
+          <option value="15">ゆっくり（15秒）</option>
+          <option value="10" selected>ふつう（10秒）</option>
+          <option value="7">はやい（7秒）</option>
+        </select>
+      </div>
+      <div>
+        <label for="shuffle">問題順</label>
+        <select id="shuffle">
+          <option value="yes" selected>ランダム</option>
+          <option value="no">固定</option>
+        </select>
+      </div>
+      <div>
+        <label for="mode">出題モード</label>
+        <select id="mode">
+          <option value="normal" selected>通常モード</option>
+          <option value="review">復習モード（前回のまちがいのみ）</option>
+        </select>
+      </div>
+    </div>
+    <div style="margin-top:16px;"><button id="start">スタート</button></div>
+    <p class="small">テーマを絞ると集中しやすくなります。復習モードは、そのテーマの中で前回まちがえた問題だけを再出題します。</p>
+  </div>
+
+  <div class="card hidden" id="quiz">
+    <div class="topbar">
+      <div>問題 <span id="progress">1 / 1</span><span class="badge" id="themeBadge"></span></div>
+      <div>残り <strong><span id="timer">10</span></strong> 秒</div>
+      <div><button type="button" id="pauseBtn">一時停止</button></div>
+    </div>
+    <div class="small" id="setname"></div>
+    <div class="prompt" id="prompt"></div>
+    <div class="question" id="question"></div>
+    <div class="choices" id="choices"></div>
+    <div class="result hidden" id="result"></div>
+  </div>
+
+  <div class="card hidden" id="summary">
+    <h2>結果</h2>
+    <div id="summaryText"></div>
+    <div style="margin-top:16px;"><button id="restart">もう一度</button></div>
+  </div>
+</div>
+
+<script>
+const questionBank = [
+  {
+    "set": "対象",
+    "group": "制限・例外",
+    "prompt": "この教室は 学生だけ 利用できます。\n先生は 別の部屋を 使います。",
+    "question": "だれが この教室を 利用できますか。",
+    "choices": [
+      "学生",
+      "先生",
+      "だれでも"
+    ],
+    "answer": "学生",
+    "explanation": "「学生だけ利用できます」とあります。"
+  },
+  {
+    "set": "対象",
+    "group": "制限・例外",
+    "prompt": "このイベントは 中学生以上が 参加できます。\n小学生は 参加できません。",
+    "question": "だれが 参加できますか。",
+    "choices": [
+      "小学生",
+      "中学生",
+      "だれでも"
+    ],
+    "answer": "中学生",
+    "explanation": "「中学生以上が参加できます」とあります。"
+  },
+  {
+    "set": "対象",
+    "group": "制限・例外",
+    "prompt": "この図書館は 市民だけ 利用できます。\n学生は 学生証が 必要です。",
+    "question": "だれが 利用できますか。",
+    "choices": [
+      "市民",
+      "旅行者",
+      "だれでも"
+    ],
+    "answer": "市民",
+    "explanation": "「市民だけ利用できます」とあります。"
+  },
+  {
+    "set": "条件",
+    "group": "制限・例外",
+    "prompt": "18歳以上の人は この映画を 見ることができます。\n17歳の人は 入れません。",
+    "question": "17歳の人は 見ることができますか。",
+    "choices": [
+      "できます",
+      "できません",
+      "無料です"
+    ],
+    "answer": "できません",
+    "explanation": "「17歳の人は入れません」とあります。"
+  },
+  {
+    "set": "条件",
+    "group": "制限・例外",
+    "prompt": "18歳未満は 入場できません。\n18歳以上は 入れます。",
+    "question": "17歳の人は 入れますか。",
+    "choices": [
+      "入れる",
+      "入れない",
+      "無料"
+    ],
+    "answer": "入れない",
+    "explanation": "「18歳未満は入場できません」とあります。"
+  },
+  {
+    "set": "条件",
+    "group": "制限・例外",
+    "prompt": "この講座は 初めての人に 限ります。\n前に 参加した人は 申し込めません。",
+    "question": "だれが 申し込めますか。",
+    "choices": [
+      "初めての人",
+      "前に参加した人",
+      "だれでも"
+    ],
+    "answer": "初めての人",
+    "explanation": "「初めての人に限ります」とあります。"
+  },
+  {
+    "set": "条件",
+    "group": "制限・例外",
+    "prompt": "女性のみ この部屋を 利用できます。\n男性は となりの部屋を 使ってください。",
+    "question": "この部屋を 利用できるのは だれですか。",
+    "choices": [
+      "女性",
+      "男性",
+      "子ども"
+    ],
+    "answer": "女性",
+    "explanation": "「女性のみ」とあります。"
+  },
+  {
+    "set": "条件",
+    "group": "制限・例外",
+    "prompt": "会員の方は このサービスを 使えます。\n会員でない人は 受付で 申し込んでください。",
+    "question": "すぐに サービスを 使えるのは だれですか。",
+    "choices": [
+      "会員",
+      "会員でない人",
+      "だれでも"
+    ],
+    "answer": "会員",
+    "explanation": "「会員の方は使えます」とあります。"
+  },
+  {
+    "set": "条件",
+    "group": "日時・条件",
+    "prompt": "この食堂は 平日の昼だけ 開いています。\n夜と 土日は 休みです。",
+    "question": "いつ 開いていますか。",
+    "choices": [
+      "平日の昼",
+      "平日の夜",
+      "土曜日の昼"
+    ],
+    "answer": "平日の昼",
+    "explanation": "「平日の昼だけ開いています」とあります。"
+  },
+  {
+    "set": "条件",
+    "group": "料金・数値",
+    "prompt": "荷物は 一人二つまで 持ち込めます。\n三つ目からは 追加料金が かかります。",
+    "question": "追加料金が いらないのは 何個までですか。",
+    "choices": [
+      "一つまで",
+      "二つまで",
+      "三つまで"
+    ],
+    "answer": "二つまで",
+    "explanation": "「一人二つまで持ち込めます」とあります。"
+  },
+  {
+    "set": "締切",
+    "group": "日時・条件",
+    "prompt": "申し込みは 5月10日までです。\n電話でも 申し込めます。",
+    "question": "いつまでに 申し込みますか。",
+    "choices": [
+      "5月1日まで",
+      "5月10日まで",
+      "電話だけです"
+    ],
+    "answer": "5月10日まで",
+    "explanation": "「5月10日までです」が締切です。"
+  },
+  {
+    "set": "日時",
+    "group": "日時・条件",
+    "prompt": "受付時間は 9時から 16時までです。\n12時から 13時までは 休みです。",
+    "question": "受付を しているのは いつですか。",
+    "choices": [
+      "10時",
+      "12時30分",
+      "16時30分"
+    ],
+    "answer": "10時",
+    "explanation": "10時は受付時間内です。12時30分は休み時間、16時30分は受付後です。"
+  },
+  {
+    "set": "日時",
+    "group": "日時・条件",
+    "prompt": "店は 月曜日から 土曜日まで 開いています。\n日曜日は 休みです。",
+    "question": "店は いつ 休みですか。",
+    "choices": [
+      "月曜日",
+      "土曜日",
+      "日曜日"
+    ],
+    "answer": "日曜日",
+    "explanation": "「日曜日は休みです」とあります。"
+  },
+  {
+    "set": "日時",
+    "group": "日時・条件",
+    "prompt": "このバスは 8時15分に 出ます。\n次のバスは 8時45分です。",
+    "question": "一番早いバスは 何時ですか。",
+    "choices": [
+      "8時15分",
+      "8時30分",
+      "8時45分"
+    ],
+    "answer": "8時15分",
+    "explanation": "最初に出るのは8時15分です。"
+  },
+  {
+    "set": "日時",
+    "group": "日時・条件",
+    "prompt": "会議は 3時に 始まります。\n10分前までに 来てください。",
+    "question": "何時までに 行けば いいですか。",
+    "choices": [
+      "2時50分",
+      "3時ちょうど",
+      "3時10分"
+    ],
+    "answer": "2時50分",
+    "explanation": "3時の10分前は2時50分です。"
+  },
+  {
+    "set": "日時",
+    "group": "日時・条件",
+    "prompt": "予約は 前日までです。\n当日の予約は できません。",
+    "question": "今日、予約できますか。",
+    "choices": [
+      "できます",
+      "できません",
+      "無料です"
+    ],
+    "answer": "できません",
+    "explanation": "「当日の予約はできません」とあります。"
+  },
+  {
+    "set": "日時",
+    "group": "日時・条件",
+    "prompt": "このイベントは 先着50名です。\n申し込みは 4月20日から 始まります。",
+    "question": "いつから 申し込みできますか。",
+    "choices": [
+      "4月10日",
+      "4月20日",
+      "4月30日"
+    ],
+    "answer": "4月20日",
+    "explanation": "「4月20日から始まります」とあります。"
+  },
+  {
+    "set": "日時",
+    "group": "日時・条件",
+    "prompt": "図書館は 祝日を 除いて、毎日 開いています。\n今日は 祝日です。",
+    "question": "今日は 図書館は 開いていますか。",
+    "choices": [
+      "開いています",
+      "開いていません",
+      "午後だけ開いています"
+    ],
+    "answer": "開いていません",
+    "explanation": "「祝日を除いて」なので、祝日は開いていません。"
+  },
+  {
+    "set": "日時",
+    "group": "日時・条件",
+    "prompt": "申し込みは メールで 受け付けます。\n返信は 翌日になります。",
+    "question": "返事は いつ 来ますか。",
+    "choices": [
+      "その日",
+      "翌日",
+      "一週間後"
+    ],
+    "answer": "翌日",
+    "explanation": "「返信は翌日になります」とあります。"
+  },
+  {
+    "set": "日時",
+    "group": "日時・条件",
+    "prompt": "受付は 先着順です。\n定員に なったら 終わります。",
+    "question": "早く 申し込んだほうがいいのは なぜですか。",
+    "choices": [
+      "安くなるから",
+      "定員になると終わるから",
+      "先生に会えるから"
+    ],
+    "answer": "定員になると終わるから",
+    "explanation": "先着順で、定員になったら終わると書いてあります。"
+  },
+  {
+    "set": "料金",
+    "group": "料金・数値",
+    "prompt": "留学生は 200円です。\n高校生以下は 無料です。\n日曜日は 休みです。",
+    "question": "留学生は いくらですか。",
+    "choices": [
+      "無料です",
+      "200円です",
+      "休みです"
+    ],
+    "answer": "200円です",
+    "explanation": "「留学生は200円です」と書いてあります。"
+  },
+  {
+    "set": "料金",
+    "group": "料金・数値",
+    "prompt": "二人で 来ると、ひとり 500円です。\nひとりで 来ると、700円です。",
+    "question": "二人で 行くと、ひとり いくらですか。",
+    "choices": [
+      "200円",
+      "500円",
+      "700円"
+    ],
+    "answer": "500円",
+    "explanation": "「二人で来ると、ひとり500円です」と書いてあります。"
+  },
+  {
+    "set": "料金",
+    "group": "料金・数値",
+    "prompt": "参加費は 1000円です。\n材料費は 別途500円かかります。",
+    "question": "全部で いくらですか。",
+    "choices": [
+      "1000円",
+      "1500円",
+      "500円"
+    ],
+    "answer": "1500円",
+    "explanation": "参加費1000円と材料費500円で、合計1500円です。"
+  },
+  {
+    "set": "料金",
+    "group": "料金・数値",
+    "prompt": "小学生は 無料です。\n中学生以上は 300円です。",
+    "question": "中学生は いくらですか。",
+    "choices": [
+      "無料",
+      "100円",
+      "300円"
+    ],
+    "answer": "300円",
+    "explanation": "「中学生以上は300円です」とあります。"
+  },
+  {
+    "set": "料金",
+    "group": "料金・数値",
+    "prompt": "会員は 20％割引です。\n一般は 1000円です。",
+    "question": "会員は いくらですか。",
+    "choices": [
+      "800円",
+      "900円",
+      "1000円"
+    ],
+    "answer": "800円",
+    "explanation": "1000円の20％引きなので800円です。"
+  },
+  {
+    "set": "料金",
+    "group": "料金・数値",
+    "prompt": "入場料は 500円です。\nただし、小学生は 半額です。",
+    "question": "小学生は いくらですか。",
+    "choices": [
+      "250円",
+      "500円",
+      "無料"
+    ],
+    "answer": "250円",
+    "explanation": "500円の半額なので250円です。"
+  },
+  {
+    "set": "料金",
+    "group": "料金・数値",
+    "prompt": "このコースは 1回 3000円です。\n3回セットは 8000円です。",
+    "question": "3回セットは いくらですか。",
+    "choices": [
+      "3000円",
+      "8000円",
+      "9000円"
+    ],
+    "answer": "8000円",
+    "explanation": "「3回セットは8000円です」とあります。"
+  },
+  {
+    "set": "料金",
+    "group": "料金・数値",
+    "prompt": "飲み物は 料金に 含まれます。\n食事は 別料金です。",
+    "question": "別に お金が かかるのは 何ですか。",
+    "choices": [
+      "飲み物",
+      "食事",
+      "水"
+    ],
+    "answer": "食事",
+    "explanation": "「食事は別料金です」とあります。"
+  },
+  {
+    "set": "料金",
+    "group": "料金・数値",
+    "prompt": "学生証を 見せると、100円引きです。\n入場料は 700円です。",
+    "question": "学生はいくら 払いますか。",
+    "choices": [
+      "600円",
+      "700円",
+      "800円"
+    ],
+    "answer": "600円",
+    "explanation": "700円から100円引きで600円です。"
+  },
+  {
+    "set": "料金",
+    "group": "料金・数値",
+    "prompt": "子ども料金は 5歳から 12歳までです。\n4歳以下は 無料です。",
+    "question": "4歳の子どもは いくらですか。",
+    "choices": [
+      "無料",
+      "子ども料金",
+      "大人料金"
+    ],
+    "answer": "無料",
+    "explanation": "「4歳以下は無料です」とあります。"
+  },
+  {
+    "set": "不可",
+    "group": "制限・例外",
+    "prompt": "この部屋では、食べてはいけません。\n飲み物は 水だけ いいです。",
+    "question": "この部屋で できないことは 何ですか。",
+    "choices": [
+      "水を飲むこと",
+      "食べること",
+      "座ること"
+    ],
+    "answer": "食べること",
+    "explanation": "「食べてはいけません」とあります。"
+  },
+  {
+    "set": "禁止",
+    "group": "制限・例外",
+    "prompt": "この場所では 写真を撮ってはいけません。\nスマホの使用も 禁止です。",
+    "question": "できないことは 何ですか。",
+    "choices": [
+      "写真を撮る",
+      "見る",
+      "歩く"
+    ],
+    "answer": "写真を撮る",
+    "explanation": "「写真を撮ってはいけません」とあります。"
+  },
+  {
+    "set": "可否",
+    "group": "制限・例外",
+    "prompt": "ここでは 靴を ぬいでください。\nくつ下のまま 入れます。",
+    "question": "入る前に 何を しますか。",
+    "choices": [
+      "靴をぬぐ",
+      "帽子をぬぐ",
+      "くつ下をぬぐ"
+    ],
+    "answer": "靴をぬぐ",
+    "explanation": "「靴をぬいでください」とあります。"
+  },
+  {
+    "set": "可否",
+    "group": "制限・例外",
+    "prompt": "この公園では ボール遊びは できません。\n散歩は できます。",
+    "question": "できることは 何ですか。",
+    "choices": [
+      "ボール遊び",
+      "散歩",
+      "花火"
+    ],
+    "answer": "散歩",
+    "explanation": "「散歩はできます」とあります。"
+  },
+  {
+    "set": "可否",
+    "group": "制限・例外",
+    "prompt": "この建物では エレベーターを 使えます。\n階段も あります。",
+    "question": "エレベーターは 使えますか。",
+    "choices": [
+      "使えます",
+      "使えません",
+      "工事中です"
+    ],
+    "answer": "使えます",
+    "explanation": "「エレベーターを使えます」とあります。"
+  },
+  {
+    "set": "禁止",
+    "group": "制限・例外",
+    "prompt": "会場では 大きい声で 話さないでください。\n携帯電話は マナーモードに してください。",
+    "question": "会場で してはいけないことは 何ですか。",
+    "choices": [
+      "静かにする",
+      "大きい声で話す",
+      "座る"
+    ],
+    "answer": "大きい声で話す",
+    "explanation": "「大きい声で話さないでください」とあります。"
+  },
+  {
+    "set": "可否",
+    "group": "制限・例外",
+    "prompt": "ペットの 入場は できません。\nただし、補助犬は 入れます。",
+    "question": "入ることができるのは どれですか。",
+    "choices": [
+      "犬なら何でも",
+      "補助犬",
+      "猫"
+    ],
+    "answer": "補助犬",
+    "explanation": "「ただし、補助犬は入れます」とあります。"
+  },
+  {
+    "set": "可否",
+    "group": "制限・例外",
+    "prompt": "この部屋では 飲み物を 飲んでも いいです。\n食事は できません。",
+    "question": "できることは 何ですか。",
+    "choices": [
+      "食事",
+      "飲み物を飲む",
+      "料理"
+    ],
+    "answer": "飲み物を飲む",
+    "explanation": "「飲み物を飲んでもいいです」とあります。"
+  },
+  {
+    "set": "禁止",
+    "group": "制限・例外",
+    "prompt": "自転車は ここに とめないでください。\n駅の前の 駐輪場を 使ってください。",
+    "question": "してはいけないことは 何ですか。",
+    "choices": [
+      "駅前の駐輪場を使う",
+      "ここに自転車をとめる",
+      "歩く"
+    ],
+    "answer": "ここに自転車をとめる",
+    "explanation": "「ここにとめないでください」とあります。"
+  },
+  {
+    "set": "可否",
+    "group": "制限・例外",
+    "prompt": "この席は 自由席です。\n好きなところに 座れます。",
+    "question": "この席は どうですか。",
+    "choices": [
+      "指定席です",
+      "自由に座れます",
+      "立って見ます"
+    ],
+    "answer": "自由に座れます",
+    "explanation": "「自由席です」とあります。"
+  },
+  {
+    "set": "除く",
+    "group": "制限・例外",
+    "prompt": "月曜日から金曜日まで 開いています。\n祝日は 除きます。",
+    "question": "いつ 開いていませんか。",
+    "choices": [
+      "火曜日",
+      "金曜日",
+      "祝日"
+    ],
+    "answer": "祝日",
+    "explanation": "「祝日は除きます」なので、祝日は開いていません。"
+  },
+  {
+    "set": "条件",
+    "group": "制限・例外",
+    "prompt": "日曜日以外は 開いています。\n土曜日も 開いています。",
+    "question": "いつ 休みですか。",
+    "choices": [
+      "土曜日",
+      "日曜日",
+      "毎日"
+    ],
+    "answer": "日曜日",
+    "explanation": "「日曜日以外は開いています」＝日曜日は休みです。"
+  },
+  {
+    "set": "条件",
+    "group": "制限・例外",
+    "prompt": "この店は 雨の日を 除いて、毎日 開いています。\n今日は 雨です。",
+    "question": "今日は 店は 開いていますか。",
+    "choices": [
+      "開いています",
+      "開いていません",
+      "午後だけ開いています"
+    ],
+    "answer": "開いていません",
+    "explanation": "「雨の日を除いて」なので、今日は開いていません。"
+  },
+  {
+    "set": "条件",
+    "group": "制限・例外",
+    "prompt": "中学生以上は 一人で 参加できます。\n小学生は 保護者と いっしょに 来てください。",
+    "question": "小学生は どうしなければなりませんか。",
+    "choices": [
+      "一人で行く",
+      "保護者といっしょに行く",
+      "参加できない"
+    ],
+    "answer": "保護者といっしょに行く",
+    "explanation": "「小学生は保護者といっしょに来てください」とあります。"
+  },
+  {
+    "set": "条件",
+    "group": "制限・例外",
+    "prompt": "クレジットカードは 使えます。\nただし、一部の店では 使えません。",
+    "question": "クレジットカードについて 正しいのは どれですか。",
+    "choices": [
+      "どの店でも使える",
+      "使えない",
+      "店によって使えないことがある"
+    ],
+    "answer": "店によって使えないことがある",
+    "explanation": "「一部の店では使えません」とあります。"
+  },
+  {
+    "set": "条件",
+    "group": "制限・例外",
+    "prompt": "このサービスは 日本国内のみ 使えます。\n海外では 使えません。",
+    "question": "海外で このサービスは 使えますか。",
+    "choices": [
+      "使えます",
+      "使えません",
+      "無料です"
+    ],
+    "answer": "使えません",
+    "explanation": "「海外では使えません」とあります。"
+  },
+  {
+    "set": "条件",
+    "group": "制限・例外",
+    "prompt": "申込書には 写真が 必要です。\nただし、オンライン申込には いりません。",
+    "question": "写真が いらないのは どれですか。",
+    "choices": [
+      "申込書",
+      "オンライン申込",
+      "窓口申込"
+    ],
+    "answer": "オンライン申込",
+    "explanation": "「オンライン申込にはいりません」とあります。"
+  },
+  {
+    "set": "条件",
+    "group": "日時・条件",
+    "prompt": "このクーポンは 平日のみ 使えます。\n土日と祝日は 使えません。",
+    "question": "いつ クーポンが 使えますか。",
+    "choices": [
+      "土曜日",
+      "祝日",
+      "平日"
+    ],
+    "answer": "平日",
+    "explanation": "「平日のみ使えます」とあります。"
+  },
+  {
+    "set": "条件",
+    "group": "制限・例外",
+    "prompt": "会場には 飲み物を 持ち込めます。\nアルコール以外なら 大丈夫です。",
+    "question": "持ち込めないのは どれですか。",
+    "choices": [
+      "水",
+      "お茶",
+      "ビール"
+    ],
+    "answer": "ビール",
+    "explanation": "「アルコール以外なら大丈夫」なので、ビールはだめです。"
+  },
+  {
+    "set": "条件",
+    "group": "日時・条件",
+    "prompt": "このバスは 駅前と 市役所前に 止まります。\n日曜日は 市役所前に 止まりません。",
+    "question": "日曜日に 止まらないのは どこですか。",
+    "choices": [
+      "駅前",
+      "市役所前",
+      "どこでも止まらない"
+    ],
+    "answer": "市役所前",
+    "explanation": "「日曜日は市役所前に止まりません」とあります。"
+  }
+];
+
+let quizData = [];
+let index = 0;
+let correct = 0;
+let wrongItems = [];
+let currentTimer = null;
+let timeLeft = 10;
+let baseTime = 10;
+let answered = false;
+let selectedTheme = "all";
+let isPaused = false;
+let isNoTimerMode = false;
+
+const elSetup = document.getElementById('setup');
+const elQuiz = document.getElementById('quiz');
+const elSummary = document.getElementById('summary');
+const elProgress = document.getElementById('progress');
+const elTimer = document.getElementById('timer');
+const elSetname = document.getElementById('setname');
+const elPrompt = document.getElementById('prompt');
+const elQuestion = document.getElementById('question');
+const elChoices = document.getElementById('choices');
+const elResult = document.getElementById('result');
+const elSummaryText = document.getElementById('summaryText');
+const elThemeBadge = document.getElementById('themeBadge');
+const elPauseBtn = document.getElementById('pauseBtn');
+
+function shuffleArray(arr) {
+  const copy = arr.slice();
+  for (let i = copy.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    const tmp = copy[i];
+    copy[i] = copy[j];
+    copy[j] = tmp;
+  }
+  return copy;
+}
+
+function getStorageKey(theme) {
+  return 'n3_wrong_items_' + theme;
+}
+
+function filterByTheme(data, theme) {
+  if (theme === 'all') return data.slice();
+  return data.filter(function(item) {
+    return item.group === theme;
+  });
+}
+
+function loadQuizData() {
+  const mode = document.getElementById('mode').value;
+  const shuffle = document.getElementById('shuffle').value === 'yes';
+  selectedTheme = document.getElementById('theme').value;
+  baseTime = Number(document.getElementById('speed').value);
+  isNoTimerMode = baseTime === 0;
+  isPaused = false;
+  correct = 0;
+  wrongItems = [];
+
+  if (mode === 'review') {
+    try {
+      const saved = JSON.parse(localStorage.getItem(getStorageKey(selectedTheme)) || '[]');
+      quizData = (saved && saved.length) ? saved : filterByTheme(questionBank, selectedTheme);
+    } catch (e) {
+      quizData = filterByTheme(questionBank, selectedTheme);
+    }
+  } else {
+    quizData = filterByTheme(questionBank, selectedTheme);
+  }
+
+  if (shuffle) {
+    quizData = shuffleArray(quizData);
+  }
+  index = 0;
+}
+
+function startQuiz() {
+  loadQuizData();
+  elSetup.classList.add('hidden');
+  elSummary.classList.add('hidden');
+  elQuiz.classList.remove('hidden');
+  elThemeBadge.textContent = selectedTheme === 'all' ? '全部' : selectedTheme;
+  elPauseBtn.textContent = isNoTimerMode ? '停止中' : '一時停止';
+  elPauseBtn.disabled = isNoTimerMode;
+  showQuestion();
+}
+
+function showQuestion() {
+  if (index >= quizData.length) {
+    finishQuiz();
+    return;
+  }
+
+  answered = false;
+  const item = quizData[index];
+  elProgress.textContent = (index + 1) + ' / ' + quizData.length;
+  elSetname.textContent = item.set;
+  elPrompt.textContent = item.prompt;
+  elQuestion.textContent = item.question;
+  elChoices.innerHTML = '';
+  elResult.className = 'result hidden';
+  isPaused = false;
+  elPauseBtn.textContent = isNoTimerMode ? '停止中' : '一時停止';
+  elPauseBtn.disabled = isNoTimerMode;
+
+  const choices = shuffleArray(item.choices);
+  choices.forEach(function(choice) {
+    const btn = document.createElement('button');
+    btn.className = 'choice';
+    btn.textContent = choice;
+    btn.addEventListener('click', function() {
+      answer(choice);
+    });
+    elChoices.appendChild(btn);
+  });
+
+  startTimer();
+}
+
+function startTimer() {
+  clearInterval(currentTimer);
+  if (isNoTimerMode) {
+    elTimer.textContent = '∞';
+    return;
+  }
+  timeLeft = baseTime;
+  elTimer.textContent = String(timeLeft);
+  currentTimer = setInterval(function() {
+    if (isPaused) return;
+    timeLeft -= 1;
+    elTimer.textContent = String(timeLeft);
+    if (timeLeft <= 0) {
+      clearInterval(currentTimer);
+      if (!answered) timeoutAnswer();
+    }
+  }, 1000);
+}
+
+function disableChoices() {
+  const buttons = elChoices.querySelectorAll('button');
+  buttons.forEach(function(btn) {
+    btn.disabled = true;
+  });
+}
+
+function answer(selected) {
+  if (answered) return;
+  answered = true;
+  clearInterval(currentTimer);
+  disableChoices();
+
+  const item = quizData[index];
+  if (selected === item.answer) {
+    correct += 1;
+    elResult.className = 'result correct';
+    elResult.innerHTML = '正解です。<br>' + item.explanation;
+  } else {
+    wrongItems.push(item);
+    elResult.className = 'result wrong';
+    elResult.innerHTML = '不正解です。<br>正解：' + item.answer + '<br>' + item.explanation;
+  }
+  setTimeout(function() {
+    index += 1;
+    showQuestion();
+  }, 1200);
+}
+
+function timeoutAnswer() {
+  disableChoices();
+  const item = quizData[index];
+  wrongItems.push(item);
+  elResult.className = 'result wrong';
+  elResult.innerHTML = '時間切れです。<br>正解：' + item.answer + '<br>' + item.explanation;
+  setTimeout(function() {
+    index += 1;
+    showQuestion();
+  }, 1200);
+}
+
+function finishQuiz() {
+  clearInterval(currentTimer);
+  elQuiz.classList.add('hidden');
+  elSummary.classList.remove('hidden');
+
+  const total = quizData.length;
+  const wrong = total - correct;
+  const rate = total ? Math.round(correct * 100 / total) : 0;
+
+  const uniqueWrong = [];
+  const seen = new Set();
+  wrongItems.forEach(function(item) {
+    const key = item.prompt + '|' + item.question;
+    if (!seen.has(key)) {
+      seen.add(key);
+      uniqueWrong.push(item);
+    }
+  });
+
+  try {
+    localStorage.setItem(getStorageKey(selectedTheme), JSON.stringify(uniqueWrong));
+  } catch (e) {}
+
+  elSummaryText.innerHTML =
+    'テーマ：' + (selectedTheme === 'all' ? '全部' : selectedTheme) + '<br>' +
+    '全' + total + '問中、正解 ' + correct + '問、不正解 ' + wrong + '問です。<br>' +
+    '正答率は ' + rate + '% です。<br><br>' +
+    (uniqueWrong.length
+      ? '今回まちがえた問題は保存しました。次回は同じテーマの「復習モード」で再出題できます。'
+      : 'まちがえた問題はありません。');
+}
+
+document.getElementById('start').addEventListener('click', startQuiz);
+elPauseBtn.addEventListener('click', function() {
+  if (isNoTimerMode) return;
+  isPaused = !isPaused;
+  elPauseBtn.textContent = isPaused ? '再開' : '一時停止';
+});
+document.getElementById('restart').addEventListener('click', function() {
+  elSummary.classList.add('hidden');
+  elSetup.classList.remove('hidden');
+});
+</script>
+</body>
+</html>
