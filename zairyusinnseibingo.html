@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
@@ -90,7 +90,7 @@
     }
 
     .cell {
-      min-height: 68px;
+      min-height: clamp(84px, 25vw, 112px);
       border: 2px solid #cfd6dc;
       border-radius: 12px;
       background: #fff;
@@ -130,14 +130,14 @@
     }
 
     .ruby {
-      font-size: 0.48rem;
+      font-size: clamp(0.66rem, 2.8vw, 0.82rem);
       color: #58636d;
       line-height: 1.05;
     }
 
     .word {
-      font-size: 0.82rem;
-      line-height: 1.15;
+      font-size: clamp(1rem, 4.4vw, 1.28rem);
+      line-height: 1.12;
     }
 
     .status {
@@ -217,15 +217,15 @@
       }
 
       .cell {
-        min-height: 62px;
+        min-height: 78px;
       }
 
       .word {
-        font-size: 0.74rem;
+        font-size: 0.98rem;
       }
 
       .ruby {
-        font-size: 0.42rem;
+        font-size: 0.62rem;
       }
 
       button {
@@ -510,3 +510,6 @@
   </script>
 </body>
 </html>
+
+
+
